@@ -157,14 +157,6 @@ def _knn_mutual_information(
     return mi_knn
 
 
-@beartype
-def _gy_transformation(matrix: FloatMatrix) -&gt; FloatMatrix:
-    &#34;&#34;&#34;Perform the Gel&#39;fand Yaglom transformation&#34;&#34;&#34;
-    return np.sqrt(
-        1 - np.exp(-2 * matrix),
-    )
-
-
 class Similarity:  # noqa: WPS214
     r&#34;&#34;&#34;Class for calculating the similarity measure.
 
@@ -393,7 +385,9 @@ class Similarity:  # noqa: WPS214
         &#34;&#34;&#34;Return the nonlinear correlation matrix based on Gel&#39;fand-Yaglom
         based on a reliable knn-estimate of the mutual information.&#34;&#34;&#34;
         nl_knn_corr = _knn_mutual_information(X, self._n_features)
-        return _gy_transformation(nl_knn_corr)
+        return np.sqrt(
+            1 - np.exp(-2 * nl_knn_corr),
+        )
 
     @beartype
     def _gy(
@@ -405,7 +399,9 @@ class Similarity:  # noqa: WPS214
     ) -&gt; float:
         &#34;&#34;&#34;Return the dissimilarity based on Gel&#39;fand-Yaglom.&#34;&#34;&#34;
         mutual_info: float = _kullback(pij, pipj)
-        return _gy_transformation(mutual_info)
+        return np.sqrt(
+            1 - np.exp(-2 * mutual_info),
+        )
 
     @beartype
     def _jsd(
@@ -840,7 +836,9 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
         &#34;&#34;&#34;Return the nonlinear correlation matrix based on Gel&#39;fand-Yaglom
         based on a reliable knn-estimate of the mutual information.&#34;&#34;&#34;
         nl_knn_corr = _knn_mutual_information(X, self._n_features)
-        return _gy_transformation(nl_knn_corr)
+        return np.sqrt(
+            1 - np.exp(-2 * nl_knn_corr),
+        )
 
     @beartype
     def _gy(
@@ -852,7 +850,9 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
     ) -&gt; float:
         &#34;&#34;&#34;Return the dissimilarity based on Gel&#39;fand-Yaglom.&#34;&#34;&#34;
         mutual_info: float = _kullback(pij, pipj)
-        return _gy_transformation(mutual_info)
+        return np.sqrt(
+            1 - np.exp(-2 * mutual_info),
+        )
 
     @beartype
     def _jsd(
