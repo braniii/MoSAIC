@@ -834,7 +834,7 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
             matrix_ = np.abs(corr)
         elif self._metric == &#39;GY&#39; and self._knn_estimate:
             matrix_ = self._nonlinear_GY_knn(X)
-        else: # &#39;NMI&#39;, &#39;JSD&#39;, &#39;GY
+        else:  # &#39;NMI&#39;, &#39;JSD&#39;, &#39;GY
             matrix_ = self._nonlinear_correlation(X)
         self.matrix_: np.ndarray = np.clip(matrix_, a_min=0, a_max=1)
 
