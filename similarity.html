@@ -198,7 +198,7 @@ class Similarity:  # noqa: WPS214
           entropies
         - `&#39;min&#39;` is the minimum of the individual entropies
 
-    GY_knn : bool, default=False
+    knn_estimator : bool, default=False
         Can only be set for metric GY. If True, the mutual information
         is estimated reliably by a parameter free method based on entropy
         estimation from k-nearest neighbors distances[^3].
@@ -261,12 +261,12 @@ class Similarity:  # noqa: WPS214
         metric: MetricString = &#39;correlation&#39;,
         online: bool = False,
         normalize_method: Optional[NormString] = None,
-        GY_knn: bool = False,
+        knn_estimator: bool = False,
     ):
         &#34;&#34;&#34;Initialize Similarity class.&#34;&#34;&#34;
         self._metric: MetricString = metric
         self._online: bool = online
-        self._knn_estimate: bool = GY_knn
+        self._knn_estimate: bool = knn_estimator
         if self._metric == &#39;NMI&#39;:
             if normalize_method is None:
                 normalize_method = self._default_normalize_method
@@ -515,7 +515,7 @@ class Similarity:  # noqa: WPS214
 <dl>
 <dt id="mosaic.similarity.Similarity"><code class="flex name class">
 <span>class <span class="ident">Similarity</span></span>
-<span>(</span><span>*, metric='correlation', online=False, normalize_method=None, GY_knn=False)</span>
+<span>(</span><span>*, metric='correlation', online=False, normalize_method=None, knn_estimator=False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Class for calculating the similarity measure.</p>
@@ -551,7 +551,7 @@ entropies</li>
 <li><code>'min'</code> is the minimum of the individual entropies</li>
 </ul>
 </dd>
-<dt><strong><code>GY_knn</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dt><strong><code>knn_estimator</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
 <dd>Can only be set for metric GY. If True, the mutual information
 is estimated reliably by a parameter free method based on entropy
 estimation from k-nearest neighbors distances<sup id="fnref:3"><a class="footnote-ref" href="#fn:3">3</a></sup>.
@@ -645,7 +645,7 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
           entropies
         - `&#39;min&#39;` is the minimum of the individual entropies
 
-    GY_knn : bool, default=False
+    knn_estimator : bool, default=False
         Can only be set for metric GY. If True, the mutual information
         is estimated reliably by a parameter free method based on entropy
         estimation from k-nearest neighbors distances[^3].
@@ -708,12 +708,12 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
         metric: MetricString = &#39;correlation&#39;,
         online: bool = False,
         normalize_method: Optional[NormString] = None,
-        GY_knn: bool = False,
+        knn_estimator: bool = False,
     ):
         &#34;&#34;&#34;Initialize Similarity class.&#34;&#34;&#34;
         self._metric: MetricString = metric
         self._online: bool = online
-        self._knn_estimate: bool = GY_knn
+        self._knn_estimate: bool = knn_estimator
         if self._metric == &#39;NMI&#39;:
             if normalize_method is None:
                 normalize_method = self._default_normalize_method
