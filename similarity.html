@@ -275,7 +275,7 @@ class Similarity:  # noqa: WPS214
             raise NotImplementedError(
                 &#39;Normalize methods are only supported with metric=&#34;NMI&#34;&#39;,
             )
-        elif self._metric != &#39;GY&#39; and self._knn_estimate:
+        if self._metric != &#39;GY&#39; and self._knn_estimate:
             raise NotImplementedError(
                 (
                     &#39;The mutual information estimate based on k-nearest&#39;
@@ -722,7 +722,7 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
             raise NotImplementedError(
                 &#39;Normalize methods are only supported with metric=&#34;NMI&#34;&#39;,
             )
-        elif self._metric != &#39;GY&#39; and self._knn_estimate:
+        if self._metric != &#39;GY&#39; and self._knn_estimate:
             raise NotImplementedError(
                 (
                     &#39;The mutual information estimate based on k-nearest&#39;
