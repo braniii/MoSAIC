@@ -41,6 +41,7 @@ All rights reserved.
 &#34;&#34;&#34;
 __all__ = [&#39;UMAPSimilarity&#39;]  # noqa: WPS410
 
+import warnings
 from typing import Optional
 
 import numpy as np
@@ -139,10 +140,16 @@ class UMAPSimilarity:  # noqa: WPS214
             n_neighbors=self._n_neighbors,
             densmap=self._densmap,
             n_components=self._n_components,
+            metric=&#39;precomputed&#39;,
         )
 
         # run UMAP with dissimalirty matrix
-        embedding: np.ndarray = reducer.fit_transform(1 - X)
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                &#39;ignore&#39;,
+                message=&#39;using precomputed metric&#39;,
+            )
+            embedding: np.ndarray = reducer.fit_transform(1 - X)
         matrix_: np.ndarray = _calc_distance_matrix(embedding)
 
         self.embedding_: np.ndarray = embedding
@@ -270,10 +277,16 @@ If <code>None</code> uses square root of the number of features.</dd>
             n_neighbors=self._n_neighbors,
             densmap=self._densmap,
             n_components=self._n_components,
+            metric=&#39;precomputed&#39;,
         )
 
         # run UMAP with dissimalirty matrix
-        embedding: np.ndarray = reducer.fit_transform(1 - X)
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                &#39;ignore&#39;,
+                message=&#39;using precomputed metric&#39;,
+            )
+            embedding: np.ndarray = reducer.fit_transform(1 - X)
         matrix_: np.ndarray = _calc_distance_matrix(embedding)
 
         self.embedding_: np.ndarray = embedding
@@ -322,10 +335,16 @@ def fit(
         n_neighbors=self._n_neighbors,
         densmap=self._densmap,
         n_components=self._n_components,
+        metric=&#39;precomputed&#39;,
     )
 
     # run UMAP with dissimalirty matrix
-    embedding: np.ndarray = reducer.fit_transform(1 - X)
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            &#39;ignore&#39;,
+            message=&#39;using precomputed metric&#39;,
+        )
+        embedding: np.ndarray = reducer.fit_transform(1 - X)
     matrix_: np.ndarray = _calc_distance_matrix(embedding)
 
     self.embedding_: np.ndarray = embedding
