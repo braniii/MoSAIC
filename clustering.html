@@ -161,17 +161,20 @@ class Clustering:
 
     Attributes
     ----------
-    clusters_ : ndarray of shape (n_clusters)
+    clusters_ : ndarray of shape (n_clusters, )
         The result of the clustering process. A list of arrays, each
         containing all indices (features) for each cluster.
+
+    labels_ : ndarray of shape (n_features, )
+        Labels of each feature.
 
     matrix_ : ndarray of shape (n_features, n_features)
         Permuted matrix according to the found clusters.
 
-    ticks_ : ndarray of shape (n_clusters)
+    ticks_ : ndarray of shape (n_clusters, )
         Get cumulative indices where new cluster starts in `matrix_`.
 
-    permutation_ : ndarray of shape (n_features)
+    permutation_ : ndarray of shape (n_features, )
         Permutation of the input features (corresponds to flattened
         `clusters_`).
 
@@ -183,7 +186,7 @@ class Clustering:
         Only for mode &#39;CPM&#39; and &#39;linkage&#39;. Indicates the resolution parameter
         used for the CPM based Leiden clustering.
 
-    linkage_matrix_ : (n_clusters - 1, 4)
+    linkage_matrix_ : ndarray of shape (n_clusters - 1, 4)
         Only for mode &#39;linkage&#39;. Holds hierarchicak clustering encoded as a
         linkage matrix, see
         [scipy:spatial.distance.linkage](https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html).
@@ -301,12 +304,17 @@ class Clustering:
         self.ticks_: Index1DArray = np.cumsum(
             [len(cluster) for cluster in self.clusters_],
         )
+        labels: Index1DArray = np.empty_like(self.permutation_)
+        for idx, cluster in enumerate(self.clusters_):
+            labels[cluster] = idx
+        self.labels_: Index1DArray = labels
 
     @beartype
     def _reset(self) -&gt; None:
         &#34;&#34;&#34;Reset internal data-dependent state of correlation.&#34;&#34;&#34;
         if hasattr(self, &#39;clusters_&#39;):  # noqa: WPS421
             del self.clusters_  # noqa: WPS420
+            del self.labels_  # noqa: WPS420
             del self.ticks_  # noqa: WPS420
             del self.permutation_  # noqa: WPS420
             del self.matrix_  # noqa: WPS420
@@ -449,14 +457,16 @@ default uses a random seed if nothing is specified.</dd>
 </dl>
 <h2 id="attributes">Attributes</h2>
 <dl>
-<dt><strong><code>clusters_</code></strong> :&ensp;<code>ndarray</code> of <code>shape (n_clusters)</code></dt>
+<dt><strong><code>clusters_</code></strong> :&ensp;<code>ndarray</code> of <code>shape (n_clusters, )</code></dt>
 <dd>The result of the clustering process. A list of arrays, each
 containing all indices (features) for each cluster.</dd>
+<dt><strong><code>labels_</code></strong> :&ensp;<code>ndarray</code> of <code>shape (n_features, )</code></dt>
+<dd>Labels of each feature.</dd>
 <dt><strong><code>matrix_</code></strong> :&ensp;<code>ndarray</code> of <code>shape (n_features, n_features)</code></dt>
 <dd>Permuted matrix according to the found clusters.</dd>
-<dt><strong><code>ticks_</code></strong> :&ensp;<code>ndarray</code> of <code>shape (n_clusters)</code></dt>
+<dt><strong><code>ticks_</code></strong> :&ensp;<code>ndarray</code> of <code>shape (n_clusters, )</code></dt>
 <dd>Get cumulative indices where new cluster starts in <code>matrix_</code>.</dd>
-<dt><strong><code>permutation_</code></strong> :&ensp;<code>ndarray</code> of <code>shape (n_features)</code></dt>
+<dt><strong><code>permutation_</code></strong> :&ensp;<code>ndarray</code> of <code>shape (n_features, )</code></dt>
 <dd>Permutation of the input features (corresponds to flattened
 <code>clusters_</code>).</dd>
 <dt><strong><code>n_neighbors_</code></strong> :&ensp;<code>int</code></dt>
@@ -465,7 +475,7 @@ neighbors used for constructin the knn-graph.</dd>
 <dt><strong><code>resolution_param_</code></strong> :&ensp;<code>float</code></dt>
 <dd>Only for mode 'CPM' and 'linkage'. Indicates the resolution parameter
 used for the CPM based Leiden clustering.</dd>
-<dt><strong><code>linkage_matrix_</code></strong> :&ensp;<code>(n_clusters - 1, 4)</code></dt>
+<dt><strong><code>linkage_matrix_</code></strong> :&ensp;<code>ndarray</code> of <code>shape (n_clusters - 1, 4)</code></dt>
 <dd>Only for mode 'linkage'. Holds hierarchicak clustering encoded as a
 linkage matrix, see
 <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html">scipy:spatial.distance.linkage</a>.</dd>
@@ -524,17 +534,20 @@ array([[1. , 0.9, 0.1],
 
     Attributes
     ----------
-    clusters_ : ndarray of shape (n_clusters)
+    clusters_ : ndarray of shape (n_clusters, )
         The result of the clustering process. A list of arrays, each
         containing all indices (features) for each cluster.
+
+    labels_ : ndarray of shape (n_features, )
+        Labels of each feature.
 
     matrix_ : ndarray of shape (n_features, n_features)
         Permuted matrix according to the found clusters.
 
-    ticks_ : ndarray of shape (n_clusters)
+    ticks_ : ndarray of shape (n_clusters, )
         Get cumulative indices where new cluster starts in `matrix_`.
 
-    permutation_ : ndarray of shape (n_features)
+    permutation_ : ndarray of shape (n_features, )
         Permutation of the input features (corresponds to flattened
         `clusters_`).
 
@@ -546,7 +559,7 @@ array([[1. , 0.9, 0.1],
         Only for mode &#39;CPM&#39; and &#39;linkage&#39;. Indicates the resolution parameter
         used for the CPM based Leiden clustering.
 
-    linkage_matrix_ : (n_clusters - 1, 4)
+    linkage_matrix_ : ndarray of shape (n_clusters - 1, 4)
         Only for mode &#39;linkage&#39;. Holds hierarchicak clustering encoded as a
         linkage matrix, see
         [scipy:spatial.distance.linkage](https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html).
@@ -664,12 +677,17 @@ array([[1. , 0.9, 0.1],
         self.ticks_: Index1DArray = np.cumsum(
             [len(cluster) for cluster in self.clusters_],
         )
+        labels: Index1DArray = np.empty_like(self.permutation_)
+        for idx, cluster in enumerate(self.clusters_):
+            labels[cluster] = idx
+        self.labels_: Index1DArray = labels
 
     @beartype
     def _reset(self) -&gt; None:
         &#34;&#34;&#34;Reset internal data-dependent state of correlation.&#34;&#34;&#34;
         if hasattr(self, &#39;clusters_&#39;):  # noqa: WPS421
             del self.clusters_  # noqa: WPS420
+            del self.labels_  # noqa: WPS420
             del self.ticks_  # noqa: WPS420
             del self.permutation_  # noqa: WPS420
             del self.matrix_  # noqa: WPS420
@@ -847,7 +865,11 @@ def fit(self, X: DistanceMatrix, y: Optional[np.ndarray] = None) -&gt; None:
     ]
     self.ticks_: Index1DArray = np.cumsum(
         [len(cluster) for cluster in self.clusters_],
-    )</code></pre>
+    )
+    labels: Index1DArray = np.empty_like(self.permutation_)
+    for idx, cluster in enumerate(self.clusters_):
+        labels[cluster] = idx
+    self.labels_: Index1DArray = labels</code></pre>
 </details>
 </dd>
 </dl>
