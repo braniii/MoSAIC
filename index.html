@@ -44,10 +44,10 @@
 </p>
 </div>
 <h1 id="molecular-systems-automated-identification-of-cooperativity">Molecular Systems Automated Identification of Cooperativity</h1>
-<p>MoSAIC is a new algorithm for correlation analysis which auto-matically detects
+<p>MoSAIC is a new method for correlation analysis which automatically detects
 collective motion in MD simulation data, identifies uncorrelated features
 as noise and hence provides a detailed picture of the key coordinates driving a
-conformational change in a biomolecular system. It is based on a community
+conformational change in a biomolecular system. It is based on the Leiden community
 detection algorithm which is used to bring a correlation matrix in a
 block-diagonal form.</p>
 <p>The method was published in:</p>
@@ -57,7 +57,7 @@ block-diagonal form.</p>
 in proteins</em>,
 in preparation</p>
 </blockquote>
-<p>We kindly ask you to cite these articles if you use this software package for
+<p>We kindly ask you to cite this article in case you use this software package for
 published works.</p>
 <h2 id="features">Features</h2>
 <ul>
@@ -69,7 +69,7 @@ long discussion in publication</li>
 </ul>
 <h2 id="installation">Installation</h2>
 <p>So far the package is only published to <a href="https://pypi.org">PyPI</a>. Soon, it will
-be added <a href="https://conda-forge.org/">conda-forge</a>, as well. For installing it to within a python environment simple call:</p>
+be added <a href="https://conda-forge.org/">conda-forge</a>, as well. To install it within a python environment simple call:</p>
 <pre><code class="language-bash">python3 -m pip install --upgrade moldyn-mosaic
 </code></pre>
 <p>or for the latest dev version</p>
@@ -93,7 +93,7 @@ preferred to ensure using the desired python environment. For enabling
 the shell completion, the entry point needs to be used.</p>
 <h3 id="ci-usage-directly-from-the-command-line">CI - Usage Directly from the Command Line</h3>
 <p>The module brings a rich CI using <a href="https://click.palletsprojects.com">click</a>.
-Each module and submodule contains a detailed help. It can be called by</p>
+Each module and submodule contains a detailed help, which can be accessed by</p>
 <pre><code class="language-bash">$ python -m mosaic
 Usage: python -m mosaic [OPTIONS] COMMAND [ARGS]...
 
