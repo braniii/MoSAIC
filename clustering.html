@@ -53,7 +53,7 @@ from sklearn.neighbors import NearestNeighbors
 
 from mosaic._typing import (  # noqa: WPS436
     ClusteringModeString,
-    DistanceMatrix,
+    SimilarityMatrix,
     Float2DArray,
     FloatMatrix,
     Index1DArray,
@@ -244,7 +244,7 @@ class Clustering:
             )
 
     @beartype
-    def fit(self, X: DistanceMatrix, y: Optional[np.ndarray] = None) -&gt; None:
+    def fit(self, X: SimilarityMatrix, y: Optional[np.ndarray] = None) -&gt; None:
         &#34;&#34;&#34;Clusters the correlation matrix by Leiden clustering on a graph.
 
         Parameters
@@ -617,7 +617,7 @@ array([[1. , 0.9, 0.1],
             )
 
     @beartype
-    def fit(self, X: DistanceMatrix, y: Optional[np.ndarray] = None) -&gt; None:
+    def fit(self, X: SimilarityMatrix, y: Optional[np.ndarray] = None) -&gt; None:
         &#34;&#34;&#34;Clusters the correlation matrix by Leiden clustering on a graph.
 
         Parameters
@@ -806,7 +806,7 @@ and 0 no correlation.</dd>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@beartype
-def fit(self, X: DistanceMatrix, y: Optional[np.ndarray] = None) -&gt; None:
+def fit(self, X: SimilarityMatrix, y: Optional[np.ndarray] = None) -&gt; None:
     &#34;&#34;&#34;Clusters the correlation matrix by Leiden clustering on a graph.
 
     Parameters
