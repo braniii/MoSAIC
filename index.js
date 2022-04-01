@@ -46,7 +46,7 @@ INDEX=[
 {
 "ref":"mosaic.similarity",
 "url":1,
-"doc":"Class for estimating correlation matrices. MIT License Copyright (c) 2021, Daniel Nagel, Georg Diez All rights reserved."
+"doc":"Class for estimating correlation matrices. MIT License Copyright (c) 2021-2022, Daniel Nagel, Georg Diez All rights reserved."
 },
 {
 "ref":"mosaic.similarity.Similarity",
@@ -62,7 +62,7 @@ INDEX=[
 {
 "ref":"mosaic.umap_similarity",
 "url":2,
-"doc":"Class for embedding correlation matrix with UMAP. MIT License Copyright (c) 2021, Daniel Nagel, Georg Diez All rights reserved."
+"doc":"Class for embedding correlation matrix with UMAP. MIT License Copyright (c) 2021-2022, Daniel Nagel, Georg Diez All rights reserved."
 },
 {
 "ref":"mosaic.umap_similarity.UMAPSimilarity",
@@ -78,7 +78,7 @@ INDEX=[
 {
 "ref":"mosaic.clustering",
 "url":3,
-"doc":"Class for clustering the correlation matrices. MIT License Copyright (c) 2021, Daniel Nagel, Georg Diez All rights reserved."
+"doc":"Class for clustering the correlation matrices. MIT License Copyright (c) 2021-2022, Daniel Nagel, Georg Diez All rights reserved."
 },
 {
 "ref":"mosaic.clustering.Clustering",
