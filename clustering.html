@@ -193,15 +193,15 @@ class Clustering:
     Examples
     --------
     &gt;&gt;&gt; import mosaic
-    &gt;&gt;&gt; mat = np.array([[1.0, 0.1, 0.9], [0.1, 1.0, 0.0], [0.8, 0.1, 1.0]])
+    &gt;&gt;&gt; mat = np.array([[1.0, 0.1, 0.9], [0.1, 1.0, 0.1], [0.9, 0.1, 1.0]])
     &gt;&gt;&gt; clust = mosaic.Clustering()
     &gt;&gt;&gt; clust.fit(mat)
     &gt;&gt;&gt; clust.matrix_
     array([[1. , 0.9, 0.1],
-           [0.8, 1. , 0.1],
-           [0.1, 0. , 1. ]])
+           [0.9, 1. , 0.1],
+           [0.1, 0.1, 1. ]])
     &gt;&gt;&gt; clust.clusters_
-    [array([0, 2]), array([1])]
+    array([list([2, 0]), list([1])], dtype=object)
 
     &#34;&#34;&#34;
 
@@ -481,15 +481,15 @@ linkage matrix, see
 </dl>
 <h2 id="examples">Examples</h2>
 <pre><code class="language-python-repl">&gt;&gt;&gt; import mosaic
-&gt;&gt;&gt; mat = np.array([[1.0, 0.1, 0.9], [0.1, 1.0, 0.0], [0.8, 0.1, 1.0]])
+&gt;&gt;&gt; mat = np.array([[1.0, 0.1, 0.9], [0.1, 1.0, 0.1], [0.9, 0.1, 1.0]])
 &gt;&gt;&gt; clust = mosaic.Clustering()
 &gt;&gt;&gt; clust.fit(mat)
 &gt;&gt;&gt; clust.matrix_
 array([[1. , 0.9, 0.1],
-       [0.8, 1. , 0.1],
-       [0.1, 0. , 1. ]])
+       [0.9, 1. , 0.1],
+       [0.1, 0.1, 1. ]])
 &gt;&gt;&gt; clust.clusters_
-[array([0, 2]), array([1])]
+array([list([2, 0]), list([1])], dtype=object)
 </code></pre>
 <p>Initialize Clustering class.</p></div>
 <details class="source">
@@ -566,15 +566,15 @@ array([[1. , 0.9, 0.1],
     Examples
     --------
     &gt;&gt;&gt; import mosaic
-    &gt;&gt;&gt; mat = np.array([[1.0, 0.1, 0.9], [0.1, 1.0, 0.0], [0.8, 0.1, 1.0]])
+    &gt;&gt;&gt; mat = np.array([[1.0, 0.1, 0.9], [0.1, 1.0, 0.1], [0.9, 0.1, 1.0]])
     &gt;&gt;&gt; clust = mosaic.Clustering()
     &gt;&gt;&gt; clust.fit(mat)
     &gt;&gt;&gt; clust.matrix_
     array([[1. , 0.9, 0.1],
-           [0.8, 1. , 0.1],
-           [0.1, 0. , 1. ]])
+           [0.9, 1. , 0.1],
+           [0.1, 0.1, 1. ]])
     &gt;&gt;&gt; clust.clusters_
-    [array([0, 2]), array([1])]
+    array([list([2, 0]), list([1])], dtype=object)
 
     &#34;&#34;&#34;
 
