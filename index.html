@@ -215,7 +215,7 @@ __version__ = &#39;0.2.0&#39;</code></pre>
 <dl>
 <dt id="mosaic.Clustering"><code class="flex name class">
 <span>class <span class="ident">Clustering</span></span>
-<span>(</span><span>*, mode='CPM', weighted=True, n_neighbors=None, resolution_parameter=None, n_iterations=None, seed=None)</span>
+<span>(</span><span>*, mode='CPM', weighted=True, n_neighbors=None, resolution_parameter=None, n_clusters=None, seed=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Class for clustering a correlation matrix.</p>
@@ -226,13 +226,11 @@ __version__ = &#39;0.2.0&#39;</code></pre>
 algorithm ('CPM', or 'modularity') or linkage clustering.
 - 'CPM': will use the constant Potts model on the full, weighted graph
 - 'modularity': will use modularity on a knn-graph
-- 'linkage': will use complete-linkage</dd>
+- 'linkage': will use complete-linkage clustering
+- 'kmedoids': will use $k$-medoids clustering</dd>
 <dt><strong><code>weighted</code></strong> :&ensp;<code>bool</code>, default=<code>True,</code></dt>
 <dd>If True, the underlying graph has weighted edges. Otherwise, the graph
 is constructed using the adjacency matrix.</dd>
-<dt><strong><code>n_iterations</code></strong> :&ensp;<code>int</code>, default=<code>None,</code></dt>
-<dd>Number of iterations to run the Leiden algorithm. None means that the
-algorithm runs until no further improvement is achieved.</dd>
 <dt><strong><code>n_neighbors</code></strong> :&ensp;<code>int</code>, default=<code>None,</code></dt>
 <dd>This parameter specifies if the whole matrix is used, or an knn-graph.
 The default depends on the <code>mode</code>
@@ -242,6 +240,8 @@ The default depends on the <code>mode</code>
 <dd>Required for mode 'CPM' and 'linkage'. If None, the resolution
 parameter will be set to the third quartile of <code>X</code> for
 <code>n_neighbors=None</code> and else to the mean value of the knn graph.</dd>
+<dt><strong><code>n_clusters</code></strong> :&ensp;<code>int</code>, default=<code>None,</code></dt>
+<dd>Required for 'kmedoids'. The number of clusters to form.</dd>
 <dt><strong><code>seed</code></strong> :&ensp;<code>int</code>, default=<code>None,</code></dt>
 <dd>Use an integer to make the randomness of Leidenalg deterministic. By
 default uses a random seed if nothing is specified.</dd>
@@ -298,15 +298,12 @@ array([list([2, 0]), list([1])], dtype=object)
         algorithm (&#39;CPM&#39;, or &#39;modularity&#39;) or linkage clustering.
         - &#39;CPM&#39;: will use the constant Potts model on the full, weighted graph
         - &#39;modularity&#39;: will use modularity on a knn-graph
-        - &#39;linkage&#39;: will use complete-linkage
+        - &#39;linkage&#39;: will use complete-linkage clustering
+        - &#39;kmedoids&#39;: will use $k$-medoids clustering
 
     weighted : bool, default=True,
         If True, the underlying graph has weighted edges. Otherwise, the graph
         is constructed using the adjacency matrix.
-
-    n_iterations : int, default=None,
-        Number of iterations to run the Leiden algorithm. None means that the
-        algorithm runs until no further improvement is achieved.
 
     n_neighbors : int, default=None,
         This parameter specifies if the whole matrix is used, or an knn-graph.
@@ -318,6 +315,9 @@ array([list([2, 0]), list([1])], dtype=object)
         Required for mode &#39;CPM&#39; and &#39;linkage&#39;. If None, the resolution
         parameter will be set to the third quartile of `X` for
         `n_neighbors=None` and else to the mean value of the knn graph.
+
+    n_clusters : int, default=None,
+        Required for &#39;kmedoids&#39;. The number of clusters to form.
 
     seed : int, default=None,
         Use an integer to make the randomness of Leidenalg deterministic. By
@@ -378,7 +378,7 @@ array([list([2, 0]), list([1])], dtype=object)
         weighted: bool = True,
         n_neighbors: Optional[PositiveInt] = None,
         resolution_parameter: Optional[NumInRange0to1] = None,
-        n_iterations: Optional[PositiveInt] = None,
+        n_clusters: Optional[PositiveInt] = None,
         seed: Optional[int] = None,
     ) -&gt; None:
         &#34;&#34;&#34;Initialize Clustering class.&#34;&#34;&#34;
@@ -386,11 +386,20 @@ array([list([2, 0]), list([1])], dtype=object)
         self._weighted: bool = weighted
         self._neighbors: Optional[PositiveInt] = n_neighbors
         self._seed: Optional[int] = seed
-        self._iterations: Optional[int] = n_iterations
+        self._n_clusters: Optional[PositiveInt] = n_clusters
 
-        if mode == &#39;linkage&#39; and self._neighbors is not None:
+        if mode in {&#39;linkage&#39;, &#39;kmedoids&#39;} and self._neighbors is not None:
             raise NotImplementedError(
-                &#34;mode=&#39;linkage&#39; does not support knn-graphs.&#34;,
+                f&#34;mode=&#39;{mode}&#39; does not support knn-graphs.&#34;,
+            )
+
+        if mode == &#39;kmedoids&#39; and self._n_clusters is None:
+            raise NotImplementedError(
+                &#34;mode=&#39;kemdoids&#39; needs parameter &#39;n_clusters&#39;&#34;,
+            )
+        if self._n_clusters is not None:
+            raise NotImplementedError(
+                f&#34;mode=&#39;{mode}&#39; does not support the usage of &#39;n_clusters&#39;&#34;,
             )
 
         if mode in {&#39;CPM&#39;, &#39;linkage&#39;}:
@@ -399,11 +408,11 @@ array([list([2, 0]), list([1])], dtype=object)
             )
             if not weighted:
                 raise NotImplementedError(
-                    f&#34;mode=&#39;{mode} does not support weighted=False&#34;,
+                    f&#34;mode=&#39;{mode}&#39; does not support weighted=False&#34;,
                 )
         elif resolution_parameter is not None:
             raise NotImplementedError(
-                &#39;mode=&#34;modularity&#34; does not support the usage of the &#39;
+                f&#34;mode=&#39;{mode}&#39; does not support the usage of the &#34;
                 &#39;resolution_parameter&#39;,
             )
 
@@ -426,7 +435,9 @@ array([list([2, 0]), list([1])], dtype=object)
 
         # prepare matric for graph construction
         mat: FloatMatrix
-        if self._mode in {&#39;CPM&#39;, &#39;linkage&#39;} and self._neighbors is None:
+        if self._mode in {&#39;linkage&#39;, &#39;kmedoids&#39;}:
+            mat = np.copy(X)
+        elif self._mode == &#39;CPM&#39; and self._neighbors is None:
             mat = np.copy(X)
         else:
             mat = self._construct_knn_mat(X)
@@ -454,6 +465,8 @@ array([list([2, 0]), list([1])], dtype=object)
         clusters: Object1DArray
         if self._mode == &#39;linkage&#39;:
             clusters = self._clustering_linkage(mat)
+        elif self._mode == &#39;kmedoids&#39;:
+            clusters = self._clustering_kmedoids(mat)
         else:  # _mode in {&#39;CPM&#39;, &#39;modularity&#39;}
             graph: ig.Graph = ig.Graph.Weighted_Adjacency(
                 list(mat.astype(np.float64)), loops=False,
@@ -489,6 +502,8 @@ array([list([2, 0]), list([1])], dtype=object)
             del self.n_neighbors_  # noqa: WPS420
         if hasattr(self, &#39;resolution_param_&#39;):  # noqa: WPS421
             del self.resolution_param_  # noqa: WPS420
+        if hasattr(self, &#39;n_clusters_&#39;):  # noqa: WPS421
+            del self.n_clusters_  # noqa: WPS420
 
     @beartype
     def _construct_knn_mat(self, matrix: FloatMatrix) -&gt; FloatMatrix:
@@ -517,9 +532,7 @@ array([list([2, 0]), list([1])], dtype=object)
     @beartype
     def _setup_leiden_kwargs(self, graph: ig.Graph) -&gt; Dict[str, Any]:
         &#34;&#34;&#34;Set up the parameters for the Leiden clustering.&#34;&#34;&#34;
-        kwargs_leiden = {}
-        if self._iterations is None:
-            kwargs_leiden[&#39;n_iterations&#39;] = -1
+        kwargs_leiden = {&#39;n_iterations&#39;: -1}
         if self._mode == &#39;CPM&#39;:
             kwargs_leiden[&#39;partition_type&#39;] = la.CPMVertexPartition
             kwargs_leiden[
@@ -551,7 +564,7 @@ array([list([2, 0]), list([1])], dtype=object)
 
     @beartype
     def _clustering_linkage(self, matrix: FloatMatrix) -&gt; Object1DArray:
-        &#34;&#34;&#34;Perform the linkage clustering on the graph.&#34;&#34;&#34;
+        &#34;&#34;&#34;Perform the linkage clustering.&#34;&#34;&#34;
         matrix[np.diag_indices_from(matrix)] = 1
         linkage_matrix: Float2DArray = linkage(
             squareform(1 - matrix),
@@ -573,6 +586,34 @@ array([list([2, 0]), list([1])], dtype=object)
         cluster_list[:] = [  # noqa: WPS362
             np.where(cuttree == cluster)[0].tolist()
             for cluster in np.unique(cuttree)
+        ]
+        return cluster_list
+
+    @beartype
+    def _clustering_kmedoids(self, matrix: FloatMatrix) -&gt; Object1DArray:
+        &#34;&#34;&#34;Perform k-medoids clustering.&#34;&#34;&#34;
+        kmedoids_kwargs = {
+            &#39;metric&#39;: &#39;precomputed&#39;,
+            &#39;max_iter&#39;: 100000,
+            &#39;method&#39;: &#39;pam&#39;,
+        }
+
+        kmedoids = KMedoids(**kmedoids_kwargs, n_clusters=self._n_clusters)
+        kmedoids.fit(1 - matrix)
+        labels = kmedoids.labels_
+
+        # store number of clusters
+        self.n_clusters_: Float2DArray = self._n_clusters
+
+        # In case of clusters of same length, numpy casted it as a 2D array.
+        # To ensure that the result is an numpy array of list, we need to
+        # create an empty list, adding the values in the second step
+        cluster_list: Object1DArray = np.empty(
+            len(self._n_clusters), dtype=object,
+        )
+        cluster_list[:] = [  # noqa: WPS362
+            [idx for idx, label in enumerate(labels) if label == clust]
+            for clust in range(self._n_clusters)
         ]
         return cluster_list</code></pre>
 </details>
@@ -615,7 +656,9 @@ def fit(self, X: SimilarityMatrix, y: Optional[np.ndarray] = None) -&gt; None:
 
     # prepare matric for graph construction
     mat: FloatMatrix
-    if self._mode in {&#39;CPM&#39;, &#39;linkage&#39;} and self._neighbors is None:
+    if self._mode in {&#39;linkage&#39;, &#39;kmedoids&#39;}:
+        mat = np.copy(X)
+    elif self._mode == &#39;CPM&#39; and self._neighbors is None:
         mat = np.copy(X)
     else:
         mat = self._construct_knn_mat(X)
@@ -643,6 +686,8 @@ def fit(self, X: SimilarityMatrix, y: Optional[np.ndarray] = None) -&gt; None:
     clusters: Object1DArray
     if self._mode == &#39;linkage&#39;:
         clusters = self._clustering_linkage(mat)
+    elif self._mode == &#39;kmedoids&#39;:
+        clusters = self._clustering_kmedoids(mat)
     else:  # _mode in {&#39;CPM&#39;, &#39;modularity&#39;}
         graph: ig.Graph = ig.Graph.Weighted_Adjacency(
             list(mat.astype(np.float64)), loops=False,
