@@ -2,7 +2,8 @@ URLS=[
 "mosaic/index.html",
 "mosaic/umap_similarity.html",
 "mosaic/similarity.html",
-"mosaic/clustering.html"
+"mosaic/clustering.html",
+"mosaic/tools.html"
 ];
 INDEX=[
 {
@@ -19,6 +20,12 @@ INDEX=[
 "ref":"mosaic.Clustering.fit",
 "url":0,
 "doc":"Clusters the correlation matrix by Leiden clustering on a graph. Parameters      X : ndarray of shape (n_features, n_features) Matrix containing the correlation metric which is clustered. The values should go from [0, 1] where 1 means completely correlated and 0 no correlation. y : Ignored Not used, present for scikit API consistency by convention.",
+"func":1
+},
+{
+"ref":"mosaic.load_clusters",
+"url":0,
+"doc":"Load clusters stored from cli. Parameters      filename : str Filename of cluster file.",
 "func":1
 },
 {
@@ -89,6 +96,17 @@ INDEX=[
 "ref":"mosaic.clustering.Clustering.fit",
 "url":3,
 "doc":"Clusters the correlation matrix by Leiden clustering on a graph. Parameters      X : ndarray of shape (n_features, n_features) Matrix containing the correlation metric which is clustered. The values should go from [0, 1] where 1 means completely correlated and 0 no correlation. y : Ignored Not used, present for scikit API consistency by convention.",
+"func":1
+},
+{
+"ref":"mosaic.tools",
+"url":4,
+"doc":"Class with helper functions. MIT License Copyright (c) 2021-2022, Daniel Nagel All rights reserved."
+},
+{
+"ref":"mosaic.tools.load_clusters",
+"url":4,
+"doc":"Load clusters stored from cli. Parameters      filename : str Filename of cluster file.",
 "func":1
 }
 ]
