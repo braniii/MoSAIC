@@ -116,7 +116,7 @@ Each module and submodule contains a detailed help, which can be accessed by</p>
 <pre><code class="language-bash">$ python -m mosaic
 Usage: python -m mosaic [OPTIONS] COMMAND [ARGS]...
 
-  MoSAIC motion v0.2.0
+  MoSAIC motion v0.2.1
 
   Molecular systems automated identification of collective motion, is
   a correlation based feature selection framework for MD data.
@@ -215,7 +215,7 @@ from .tools import load_clusters
 from .umap_similarity import UMAPSimilarity
 
 
-__version__ = &#39;0.2.0&#39;</code></pre>
+__version__ = &#39;0.2.1&#39;</code></pre>
 </details>
 </section>
 <section>
@@ -268,7 +268,7 @@ def load_clusters(filename: str) -&gt; Object1DArray:
         Filename of cluster file.
 
     &#34;&#34;&#34;
-    clusters_list =  [
+    clusters_list = [
         np.array(
             cluster.split()
         ).astype(int).tolist()
