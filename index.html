@@ -54,6 +54,7 @@
 <a href="#features">Features</a> •
 <a href="#installation">Installation</a> •
 <a href="#usage">Usage</a>
+<a href="#faq">FAQ</a>
 </p>
 </div>
 <h1 id="molecular-systems-automated-identification-of-cooperativity">Molecular Systems Automated Identification of Cooperativity</h1>
@@ -93,12 +94,16 @@ python3 -m pip install git+ssh://git@github.com/moldyn/MoSAIC.git
 # or via password-based login
 python3 -m pip install git+https://github.com/moldyn/MoSAIC.git
 </code></pre>
+<p>In case one wants to use the deprecated <code><a title="mosaic.UMAPSimilarity" href="#mosaic.UMAPSimilarity">UMAPSimilarity</a></code> or the module
+<code><a title="mosaic" href="#mosaic">mosaic</a> umap</code> one needs to specify the <code>extras_require='umap'</code>, so</p>
+<pre><code class="language-bash">python3 -m pip install --upgrade moldyn-mosaic[umap]
+</code></pre>
 <h3 id="shell-completion">Shell Completion</h3>
 <p>Using the <code>bash</code>, <code>zsh</code> or <code>fish</code> shell click provides an easy way to
 provide shell completion, checkout the
 <a href="https://click.palletsprojects.com/en/8.0.x/shell-completion">docs</a>.
 In the case of bash you need to add following line to your <code>~/.bashrc</code></p>
-<pre><code class="language-bash">eval &quot;$(_MOSAIC_COMPLETE=bash_source MoSAIC)&quot;
+<pre><code class="language-bash">eval &quot;$(_MOSAIC_COMPLETE=bash_source mosaic)&quot;
 </code></pre>
 <h2 id="usage">Usage</h2>
 <p>In general one can call the module directly by its entry point <code>$ MoSAIC</code>
@@ -111,11 +116,11 @@ Each module and submodule contains a detailed help, which can be accessed by</p>
 <pre><code class="language-bash">$ python -m mosaic
 Usage: python -m mosaic [OPTIONS] COMMAND [ARGS]...
 
-  MoSAIC motion v0.1.0
+  MoSAIC motion v0.2.0
 
   Molecular systems automated identification of collective motion, is
   a correlation based feature selection framework for MD data.
-  Copyright (c) 2022, Georg Diez and Daniel Nagel
+  Copyright (c) 2021-2022, Georg Diez and Daniel Nagel
 
 Options:
   --help  Show this message and exit.
@@ -175,6 +180,27 @@ clusters = clust.clusters_
 clusterd_X = clust.matrix_
 ...
 </code></pre>
+<h3 id="faq">FAQ</h3>
+<h4 id="how-to-load-the-clusters-file-back-to-python">How to load the clusters file back to Python?</h4>
+<p>Simply use the function provided in <code><a title="mosaic.tools" href="tools.html">mosaic.tools</a></code>:</p>
+<pre><code class="language-python">import mosaic
+
+clusterfile = '...'
+clusters = mosaic.tools.load_clusters(clusterfile)
+</code></pre>
+<h4 id="i-get-an-error">I get an error.</h4>
+<p>Please open an issue.</p>
+<h4 id="should-i-upgrade-the-package">Should I upgrade the package?</h4>
+<p>You can check out the CHANGELOG.md to see what changed.</p>
+<h4 id="how-can-i-interpretate-the-results">How can I interpretate the results?</h4>
+<p>Check out our publication for two detailed examples.</p>
+<h4 id="is-it-possible-to-install-the-cli-only">Is it possible to install the CLI only?</h4>
+<p>Partially, yes. If you do not want to screw up your current Python
+environment there are multiples possibilities. Either create a
+virtual environment on your own via <code>conda</code> or <code>venv</code>, or you can
+simply use <a href="https://pypa.github.io/pipx/">pipx</a></p>
+<h4 id="is-the-silhouette-method-implemented">Is the silhouette method implemented?</h4>
+<p>This feature will be added in <code>v0.3.0</code> in the next weeks.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1448,6 +1474,15 @@ def fit(
 <li><a href="#usage">Usage</a><ul>
 <li><a href="#ci-usage-directly-from-the-command-line">CI - Usage Directly from the Command Line</a></li>
 <li><a href="#module-inside-a-python-script">Module - Inside a Python Script</a></li>
+<li><a href="#faq">FAQ</a><ul>
+<li><a href="#how-to-load-the-clusters-file-back-to-python">How to load the clusters file back to Python?</a></li>
+<li><a href="#i-get-an-error">I get an error.</a></li>
+<li><a href="#should-i-upgrade-the-package">Should I upgrade the package?</a></li>
+<li><a href="#how-can-i-interpretate-the-results">How can I interpretate the results?</a></li>
+<li><a href="#is-it-possible-to-install-the-cli-only">Is it possible to install the CLI only?</a></li>
+<li><a href="#is-the-silhouette-method-implemented">Is the silhouette method implemented?</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
