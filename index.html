@@ -213,7 +213,7 @@ simply use <a href="https://pypa.github.io/pipx/">pipx</a></p>
 &#34;&#34;&#34;.. include:: ../../README.md&#34;&#34;&#34;
 __all__ = [&#39;Clustering&#39;, &#39;Similarity&#39;, &#39;UMAPSimilarity&#39;]
 
-import mosaic.utils
+import mosaic.utils  # noqa: F401
 from .clustering import Clustering
 from .similarity import Similarity
 from .umap_similarity import UMAPSimilarity
