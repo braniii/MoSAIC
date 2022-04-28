@@ -43,6 +43,7 @@ __all__ = [&#39;load_clusters&#39;, &#39;save_clusters&#39;]  # noqa: WPS410
 
 import datetime
 import getpass
+import importlib
 import platform
 import sys
 
@@ -97,6 +98,12 @@ def load_clusters(filename: str) -&gt; Object1DArray:
     filename : str
         Filename of cluster file.
 
+    Returns
+    -------
+    clusters : ndarray of shape (n_clusters, )
+        A list of arrays, each containing all indices (features) for each
+        cluster.
+
     &#34;&#34;&#34;
     clusters_list = [
         np.array(
@@ -117,13 +124,13 @@ def load_clusters(filename: str) -&gt; Object1DArray:
 
 @beartype
 def save_clusters(filename: str, clusters: Object1DArray):
-    &#34;&#34;&#34;Save clusters from Clustering.clusters_ to txt file.
+    &#34;&#34;&#34;Save clusters from `mosaic.Clustering.clusters_` to txt file.
 
     Parameters
     ----------
     filename : str
         Filename of cluster file.
-    clusters: ndarray of shape (n_clusters, )
+    clusters : ndarray of shape (n_clusters, )
         A list of arrays, each containing all indices (features) for each
         cluster.
 
@@ -144,6 +151,26 @@ def save_clusters(filename: str, clusters: Object1DArray):
             &#39;In ith row are the indices listed (zero-indexed) corresponding &#39;
             &#39;to cluster i.&#39;
         ),
+    )
+
+
+def _importOptinalRequires(module, error):
+    &#34;&#34;&#34;Import optinal module once needed.&#34;&#34;&#34;
+    try:
+        lib = importlib.import_module(module)
+    except ImportError:
+        raise ImportError(error)
+    return lib
+
+
+def _importUmap():
+    &#34;&#34;&#34;Import optinal module once needed.&#34;&#34;&#34;
+    return _importOptinalRequires(
+        &#39;umap&#39;,
+        (
+            &#39;Optinal depedency &#34;umap&#34; is not installed. Please install &#39;
+            &#39;mosaic via:\n\tpython -m pip install mosaic-clustering[umap]&#39;,
+        ),
     )</code></pre>
 </details>
 </section>
@@ -163,6 +190,12 @@ def save_clusters(filename: str, clusters: Object1DArray):
 <dl>
 <dt><strong><code>filename</code></strong> :&ensp;<code>str</code></dt>
 <dd>Filename of cluster file.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>clusters</code></strong> :&ensp;<code>ndarray</code> of <code>shape (n_clusters, )</code></dt>
+<dd>A list of arrays, each containing all indices (features) for each
+cluster.</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -176,6 +209,12 @@ def load_clusters(filename: str) -&gt; Object1DArray:
     ----------
     filename : str
         Filename of cluster file.
+
+    Returns
+    -------
+    clusters : ndarray of shape (n_clusters, )
+        A list of arrays, each containing all indices (features) for each
+        cluster.
 
     &#34;&#34;&#34;
     clusters_list = [
@@ -199,7 +238,7 @@ def load_clusters(filename: str) -&gt; Object1DArray:
 <span>def <span class="ident">save_clusters</span></span>(<span>filename, clusters)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Save clusters from Clustering.clusters_ to txt file.</p>
+<div class="desc"><p>Save clusters from <code>mosaic.Clustering.clusters_</code> to txt file.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>filename</code></strong> :&ensp;<code>str</code></dt>
@@ -214,13 +253,13 @@ cluster.</dd>
 </summary>
 <pre><code class="python">@beartype
 def save_clusters(filename: str, clusters: Object1DArray):
-    &#34;&#34;&#34;Save clusters from Clustering.clusters_ to txt file.
+    &#34;&#34;&#34;Save clusters from `mosaic.Clustering.clusters_` to txt file.
 
     Parameters
     ----------
     filename : str
         Filename of cluster file.
-    clusters: ndarray of shape (n_clusters, )
+    clusters : ndarray of shape (n_clusters, )
         A list of arrays, each containing all indices (features) for each
         cluster.
 

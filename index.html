@@ -1309,6 +1309,9 @@ If <code>None</code> uses square root of the number of features.</dd>
         n_components: PositiveInt = _default_n_components,
     ):
         &#34;&#34;&#34;Initialize UMAPSimilarity class.&#34;&#34;&#34;
+        # import optinal dependency umap.
+        self._umap = _importUmap()
+
         self._densmap: bool = densmap
         self._n_neighbors: Optional[PositiveInt] = n_neighbors
         self._n_components: PositiveInt = n_components
@@ -1335,7 +1338,7 @@ If <code>None</code> uses square root of the number of features.</dd>
             )
         self.n_neighbors_: PositiveInt = self._n_neighbors
 
-        reducer = umap.UMAP(
+        reducer = self._umap.UMAP(
             n_neighbors=self._n_neighbors,
             densmap=self._densmap,
             n_components=self._n_components,
@@ -1393,7 +1396,7 @@ def fit(
         )
     self.n_neighbors_: PositiveInt = self._n_neighbors
 
-    reducer = umap.UMAP(
+    reducer = self._umap.UMAP(
         n_neighbors=self._n_neighbors,
         densmap=self._densmap,
         n_components=self._n_components,
