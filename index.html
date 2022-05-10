@@ -758,7 +758,7 @@ def fit(self, X: SimilarityMatrix, y: Optional[np.ndarray] = None) -&gt; None:
 </dd>
 <dt id="mosaic.Similarity"><code class="flex name class">
 <span>class <span class="ident">Similarity</span></span>
-<span>(</span><span>*, metric='correlation', online=False, normalize_method=None, knn_estimator=False)</span>
+<span>(</span><span>*, metric='correlation', low_memory=False, normalize_method=None, knn_estimator=False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Class for calculating the similarity measure.</p>
@@ -776,9 +776,9 @@ correlation</li>
 probability distribution and the product of the marginal probability
 distributions to calculate their dissimilarity</li>
 </ul>
-<p>Note: <code>'NMI'</code> is supported only with online=False</p>
+<p>Note: <code>'NMI'</code> is supported only with low_memory=False</p>
 </dd>
-<dt><strong><code>online</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dt><strong><code>low_memory</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
 <dd>If True, the input of fit X needs to be a file name and the correlation
 is calculated on the fly. Otherwise, an array is assumed as input X.</dd>
 <dt><strong><code>normalize_method</code></strong> :&ensp;<code>str</code>, default=<code>'geometric'</code></dt>
@@ -822,8 +822,8 @@ array([[1.       , 0.9697832],
 <span><span class="MathJax_Preview">\rho_{X,Y} =
 \frac{\langle(X -\mu_X)(Y -\mu_Y)\rangle}{\sigma_X\sigma_Y}</span><script type="math/tex; mode=display">\rho_{X,Y} =
 \frac{\langle(X -\mu_X)(Y -\mu_Y)\rangle}{\sigma_X\sigma_Y}</script></span>
-where for the online algorithm the Welford algorithm taken from Donald E.
-Knuth were used <sup id="fnref:2"><a class="footnote-ref" href="#fn:2">2</a></sup>.</p>
+where for the online (low memory) algorithm the Welford algorithm taken
+from Donald E. Knuth were used <sup id="fnref:2"><a class="footnote-ref" href="#fn:2">2</a></sup>.</p>
 <p>The Jensen-Shannon divergence is defined as
 <span><span class="MathJax_Preview">D_{\text{JS}} = \frac{1}{2} D_{\text{KL}}(p(x,y)||M)
 + \frac{1}{2} D_{\text{KL}}(p(x)p(y)||M)\;,</span><script type="math/tex; mode=display">D_{\text{JS}} = \frac{1}{2} D_{\text{KL}}(p(x,y)||M)
@@ -871,9 +871,9 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
           probability distribution and the product of the marginal probability
           distributions to calculate their dissimilarity
 
-        Note: `&#39;NMI&#39;` is supported only with online=False
+        Note: `&#39;NMI&#39;` is supported only with low_memory=False
 
-    online : bool, default=False
+    low_memory : bool, default=False
         If True, the input of fit X needs to be a file name and the correlation
         is calculated on the fly. Otherwise, an array is assumed as input X.
 
@@ -918,8 +918,8 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
     The correlation is defined as
     $$\rho_{X,Y} =
     \frac{\langle(X -\mu_X)(Y -\mu_Y)\rangle}{\sigma_X\sigma_Y}$$
-    where for the online algorithm the Welford algorithm taken from Donald E.
-    Knuth were used [^2].
+    where for the online (low memory) algorithm the Welford algorithm taken
+    from Donald E. Knuth were used [^2].
 
     [^1]: Gel&#39;fand, I.M. and Yaglom, A.M. (1957). &#34;Calculation of amount of
         information about a random function contained in another such
@@ -949,13 +949,13 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
         self,
         *,
         metric: MetricString = &#39;correlation&#39;,
-        online: bool = False,
+        low_memory: bool = False,
         normalize_method: Optional[NormString] = None,
         knn_estimator: bool = False,
     ):
         &#34;&#34;&#34;Initialize Similarity class.&#34;&#34;&#34;
         self._metric: MetricString = metric
-        self._online: bool = online
+        self._low_memory: bool = low_memory
         self._knn_estimate: bool = knn_estimator
         if self._metric == &#39;NMI&#39;:
             if normalize_method is None:
@@ -984,7 +984,7 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
 
         Parameters
         ----------
-        X : ndarray of shape (n_samples, n_features) or str if online=True
+        X : ndarray of shape (n_samples, n_features) or str if low_memory=True
             Training data.
 
         y : Ignored
@@ -995,14 +995,14 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
 
     @fit.register
     def _(self, X: np.ndarray, y=None) -&gt; None:
-        &#34;&#34;&#34;Dispatched for online=False with matrix input.&#34;&#34;&#34;
+        &#34;&#34;&#34;Dispatched for low_memory=False with matrix input.&#34;&#34;&#34;
         self._reset()
 
         corr: np.ndarray
         matrix_: np.ndarray
         # parse data
-        if self._online:
-            raise TypeError(&#39;Using online=True requires X:str&#39;)
+        if self._low_memory:
+            raise TypeError(&#39;Using low_memory=True requires X:str&#39;)
         if X.ndim == 1:
             raise ValueError(
                 &#39;Reshape your data either using array.reshape(-1, 1) if your &#39;
@@ -1028,21 +1028,21 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
 
     @fit.register
     def _(self, X: str, y=None) -&gt; None:
-        &#34;&#34;&#34;Dispatched for online=True with string.&#34;&#34;&#34;
+        &#34;&#34;&#34;Dispatched for low_memory=True with string.&#34;&#34;&#34;
         self._reset()
 
         corr: np.ndarray
         matrix_: np.ndarray
         # parse data
-        if not self._online:
-            raise ValueError(&#39;Mode online=False reuqires X:np.ndarray.&#39;)
+        if not self._low_memory:
+            raise ValueError(&#39;Mode low_memory=False reuqires X:np.ndarray.&#39;)
 
         if self._metric == &#39;correlation&#39;:
             corr = self._online_correlation(X)
             matrix_ = np.abs(corr)
         else:
             raise ValueError(
-                &#39;Mode online=True is only implemented for correlation.&#39;,
+                &#39;Mode low_memory=True is only implemented for correlation.&#39;,
             )
 
         self.matrix_: np.ndarray = np.clip(matrix_, a_min=0, a_max=1)
@@ -1150,52 +1150,18 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
     def _online_correlation(self, X: str) -&gt; FloatMatrix:
         &#34;&#34;&#34;Calculate correlation on the fly.&#34;&#34;&#34;
         self._filename: str = X
-        self._n_features: int = len(next(self._data_gen()))
-        # parse mean, std and corr
-        return self._welford_correlation()
-
-    @beartype
-    def _data_gen(
-        self, comments: Union[str, Tuple[str, ...]] = (&#39;#&#39;, &#39;@&#39;),
-    ) -&gt; Generator[Float1DArray, None, None]:
-        &#34;&#34;&#34;Return all non comment lines as generator.&#34;&#34;&#34;
-        with open(self._filename) as file_obj:
-            for line in file_obj:
-                if line.startswith(comments):
-                    continue
-                yield np.array(line.split()).astype(self._dtype)
-
-    @beartype
-    def _welford_correlation(self) -&gt; FloatMatrix:
-        &#34;&#34;&#34;Calculate the correlation via online Welford algorithm.
-
-        Welford algorithm, generalized to correlation. Taken from:
-        Donald E. Knuth (1998). The Art of Computer Programming, volume 2:
-        Seminumerical Algorithms, 3rd edn., p. 232. Boston: Addison-Wesley.
-
-        &#34;&#34;&#34;
-        n: int = 0
-        mean: np.ndarray = np.zeros(self._n_features, dtype=self._dtype)
-        corr: np.ndarray = np.zeros(  # noqa: WPS317
-            (self._n_features, self._n_features), dtype=self._dtype,
+        self._n_features: int = len(
+            next(
+                _data_gen(filename=self._filename, dtype=self._dtype),
+            ),
         )
-
-        for x in self._data_gen():
-            n += 1
-            dx: np.ndarray = x - mean
-            mean = mean + dx / n
-            corr = corr + dx.reshape(-1, 1) * (
-                x - mean
-            ).reshape(1, -1)
-
-        self._n_samples = n
-        if n &lt; 2:
-            return np.full_like(corr, np.nan)
-
-        std = np.sqrt(np.diag(corr) / (n - 1))
-        return corr / (n - 1) / (
-            std.reshape(-1, 1) * std.reshape(1, -1)
-        )</code></pre>
+        corr, n = _welford_correlation(
+            filename=self._filename,
+            dtype=self._dtype,
+            n_features=self._n_features,
+        )
+        self._n_samples: int = n
+        return corr</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
@@ -1206,7 +1172,7 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
 <div class="desc"><p>Compute the correlation/nmi distance matrix.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>X</code></strong> :&ensp;<code>ndarray</code> of <code>shape (n_samples, n_features)</code> or <code>str if online=True</code></dt>
+<dt><strong><code>X</code></strong> :&ensp;<code>ndarray</code> of <code>shape (n_samples, n_features)</code> or <code>str if low_memory=True</code></dt>
 <dd>Training data.</dd>
 <dt><strong><code>y</code></strong> :&ensp;<code>Ignored</code></dt>
 <dd>Not used, present for scikit API consistency by convention.</dd>
@@ -1226,7 +1192,7 @@ def fit(
 
     Parameters
     ----------
-    X : ndarray of shape (n_samples, n_features) or str if online=True
+    X : ndarray of shape (n_samples, n_features) or str if low_memory=True
         Training data.
 
     y : Ignored
