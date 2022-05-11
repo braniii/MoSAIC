@@ -45,66 +45,26 @@ from functools import singledispatchmethod
 
 import numpy as np
 from beartype import beartype
-from beartype.typing import Callable, Generator, Optional, Tuple, Union
-from scipy.spatial.distance import jensenshannon
+from beartype.typing import Callable, Optional, Union
 from sklearn import preprocessing
-from sklearn.feature_selection import mutual_info_regression
 
+from mosaic._correlation_utils import (  # noqa: WPS436
+    _correlation,
+    _estimate_densities,
+    _gy,
+    _jsd,
+    _nmi_gen,
+    _nonlinear_GY_knn,
+    _welford_correlation,
+)
 from mosaic._typing import (  # noqa: WPS436
     ArrayLikeFloat,
-    DTypeLike,
-    Float1DArray,
     Float2DArray,
     FloatMatrix,
     FloatMax2DArray,
     MetricString,
     NormString,
-    PositiveInt,
 )
-
-
-@beartype
-def _freedman_diaconis_rule(x: Float1DArray) -&gt; int:
-    &#34;&#34;&#34;Freedman Diaconis rule to estimate number of bins.
-
-    We replaced the prefactor 2 by 2.59 to asymptotically match Scott&#39;s normal
-    reference rule for a normal distribution. See
-    https://www.wikiwand.com/en/Freedman–Diaconis_rule
-
-    Freedman, David and Diaconis, Persi (1981):
-    &#34;On the histogram as a density estimator: L2 theory&#34;
-    Probability Theory and Related Fields. 57 (4), 453–476
-
-    &#34;&#34;&#34;
-    scott_factor = 2.59
-    iqr = np.subtract(*np.percentile(x, [75, 25]))
-    binwidth = scott_factor * iqr / np.cbrt(len(x))
-    ptp = np.min([
-        np.subtract(*np.percentile(x, [85, 0])),
-        np.subtract(*np.percentile(x, [100, 15])),
-    ])
-    return int(
-        np.ceil(ptp / binwidth),
-    )
-
-
-@beartype
-def _entropy(p: ArrayLikeFloat) -&gt; float:
-    &#34;&#34;&#34;Calculate entropy of density p.&#34;&#34;&#34;
-    return -1 * np.sum(p * np.ma.log(p))
-
-
-@beartype
-def _kullback(p: ArrayLikeFloat, q: ArrayLikeFloat) -&gt; float:
-    if len(p) != len(q):
-        raise ValueError(
-            f&#39;Arrays p, q need to be of same length, but {len(p):.0f} vs &#39;
-            f&#39;{len(q):.0f}.&#39;,
-        )
-    &#34;&#34;&#34;Calculate Kullback-Leibler divergence of density p, q.&#34;&#34;&#34;
-    return np.sum(
-        p * np.ma.log(np.ma.divide(p, q)),
-    )
 
 
 @beartype
@@ -112,118 +72,6 @@ def _standard_scaler(X: Float2DArray) -&gt; Float2DArray:
     &#34;&#34;&#34;Make data mean-free and std=1.&#34;&#34;&#34;
     scaler = preprocessing.StandardScaler().fit(X)
     return scaler.transform(X)
-
-
-@beartype
-def _estimate_densities(
-    x: Float1DArray, y: Float1DArray, bins: Optional[PositiveInt] = None,
-) -&gt; Tuple[Float2DArray, Float2DArray, Float1DArray, Float1DArray]:
-    &#34;&#34;&#34;Calculate two dimensional probability densities.&#34;&#34;&#34;
-    if bins is None:
-        bins = [
-            _freedman_diaconis_rule(x),
-            _freedman_diaconis_rule(y),
-        ]
-    hist, _, _ = np.histogram2d(x, y, bins=bins, density=True)
-    # transpose since numpy considers axis 0 as y and axis 1 as x
-    pxy = hist.T / np.sum(hist)
-    px = np.sum(pxy, axis=1)
-    py = np.sum(pxy, axis=0)
-    pxpy = px[:, np.newaxis] * py[np.newaxis, :]
-
-    return pxy, pxpy, px, py
-
-
-@beartype
-def _correlation(X: Float2DArray) -&gt; FloatMatrix:
-    &#34;&#34;&#34;Return the correlation of input.
-
-    Each feature (column) of X need to be mean-free with standard deviation 1.
-
-    &#34;&#34;&#34;
-    return X.T / len(X) @ X
-
-
-@beartype
-def _knn_mutual_information(
-    X: Float2DArray,
-    nfeatures: PositiveInt,
-) -&gt; FloatMatrix:
-    &#34;&#34;&#34;Return the knn-estimated mutual information of input.&#34;&#34;&#34;
-    mi_knn = np.empty((nfeatures, nfeatures))
-    for numf, feature in enumerate(X.T):
-        mi_knn[numf] = mutual_info_regression(
-            X, feature,
-        )
-    return mi_knn
-
-
-@beartype
-def _data_gen(
-    *,
-    filename: str,
-    dtype: DTypeLike,
-    comments: Union[str, Tuple[str, ...]] = (&#39;#&#39;, &#39;@&#39;),
-) -&gt; Generator[Float1DArray, None, None]:
-    &#34;&#34;&#34;Return all non comment lines as generator.&#34;&#34;&#34;
-    with open(filename) as file_obj:
-        for line in file_obj:
-            if line.startswith(comments):
-                continue
-            yield np.array(line.split()).astype(dtype)
-
-
-@beartype
-def _get_n_features(
-    *,
-    filename: str,
-    dtype: DTypeLike,
-) -&gt; int:
-    &#34;&#34;&#34;Return the number of columns/features.&#34;&#34;&#34;
-    return len(
-        next(
-            _data_gen(filename=filename, dtype=dtype),
-        ),
-    )
-
-
-@beartype
-def _welford_correlation(
-    *,
-    filename: str,
-    dtype: DTypeLike,
-) -&gt; Tuple[FloatMatrix, int, int]:
-    &#34;&#34;&#34;Calculate the correlation via online Welford algorithm.
-
-    Welford algorithm, generalized to correlation. Taken from:
-    Donald E. Knuth (1998). The Art of Computer Programming, volume 2:
-    Seminumerical Algorithms, 3rd edn., p. 232. Boston: Addison-Wesley.
-
-    &#34;&#34;&#34;
-    n_samples: int = 0
-    n_features: int = _get_n_features(filename=filename, dtype=dtype)
-    mean: np.ndarray = np.zeros(n_features, dtype=dtype)
-    corr: np.ndarray = np.zeros(  # noqa: WPS317
-        (n_features, n_features), dtype=dtype,
-    )
-
-    for x in _data_gen(filename=filename, dtype=dtype):
-        n_samples += 1
-        dx: np.ndarray = x - mean
-        mean = mean + dx / n_samples
-        corr = corr + dx.reshape(-1, 1) * (
-            x - mean
-        ).reshape(1, -1)
-
-    if n_samples &lt; 2:
-        return np.full_like(corr, np.nan), n_samples, n_features
-
-    std = np.sqrt(np.diag(corr) / (n_samples - 1))
-    corr = corr / (n_samples - 1) / (
-        std.reshape(-1, 1) * std.reshape(1, -1)
-    )
-
-    return corr, n_samples, n_features
 
 
 class Similarity:  # noqa: WPS214
@@ -390,7 +238,7 @@ class Similarity:  # noqa: WPS214
             corr = _correlation(X)
             matrix_ = np.abs(corr)
         elif self._metric == &#39;GY&#39; and self._knn_estimate:
-            matrix_ = self._nonlinear_GY_knn(X)
+            matrix_ = _nonlinear_GY_knn(X)
         else:  # &#39;NMI&#39;, &#39;JSD&#39;, &#39;GY
             matrix_ = self._nonlinear_correlation(X)
         self.matrix_: np.ndarray = np.clip(matrix_, a_min=0, a_max=1)
@@ -427,97 +275,25 @@ class Similarity:  # noqa: WPS214
     @beartype
     def _nonlinear_correlation(self, X: Float2DArray) -&gt; FloatMatrix:
         &#34;&#34;&#34;Return the nonlinear correlation.&#34;&#34;&#34;
-        calc_nl_corr: Callable = {
-            &#39;NMI&#39;: self._nmi,
-            &#39;GY&#39;: self._gy,
-            &#39;JSD&#39;: self._jsd,
-        }[self._metric]
+        calc_nl_corr: Callable
+        if self._metric == &#39;NMI&#39;:
+            calc_nl_corr = _nmi_gen(self._normalize_method)
+        elif self._metric == &#39;GY&#39;:
+            calc_nl_corr = _gy
+        else:
+            calc_nl_corr = _jsd
 
         nl_corr: FloatMatrix = np.empty(  # noqa: WPS317
             (self._n_features, self._n_features), dtype=self._dtype,
         )
-        for idx_i in range(self._n_features):
-            xi = X[:, idx_i]
+        for idx_i, xi in enumerate(X.T):
             nl_corr[idx_i, idx_i] = 1
-            for idx_j in range(idx_i + 1, self._n_features):
-                xj = X[:, idx_j]
+            for idx_j, xj in enumerate(X.T[idx_i + 1:], idx_i + 1):
                 nl_corr_ij = calc_nl_corr(*_estimate_densities(xi, xj))
                 nl_corr[idx_i, idx_j] = nl_corr_ij
                 nl_corr[idx_j, idx_i] = nl_corr_ij
 
         return nl_corr
-
-    @beartype
-    def _nonlinear_GY_knn(self, X: Float2DArray) -&gt; FloatMatrix:
-        &#34;&#34;&#34;Gel&#39;fand-Yaglom correlation matrix based on k-nn estimator.
-
-        Return the nonlinear correlation matrix based on Gel&#39;fand-Yaglom
-        based on a reliable knn-estimate of the mutual information.
-
-        &#34;&#34;&#34;
-        nl_knn_corr = _knn_mutual_information(X, self._n_features)
-        return np.sqrt(
-            1 - np.exp(-2 * nl_knn_corr),
-        )
-
-    @beartype
-    def _gy(
-        self,
-        pij: Float2DArray,
-        pipj: Float2DArray,
-        pi: Float1DArray,
-        pj: Float1DArray,
-    ) -&gt; float:
-        &#34;&#34;&#34;Return the dissimilarity based on Gel&#39;fand-Yaglom.&#34;&#34;&#34;
-        mutual_info: float = _kullback(pij, pipj)
-        return np.sqrt(
-            1 - np.exp(-2 * mutual_info),
-        )
-
-    @beartype
-    def _jsd(
-        self,
-        pij: Float2DArray,
-        pipj: Float2DArray,
-        pi: Float1DArray,
-        pj: Float1DArray,
-    ) -&gt; float:
-        &#34;&#34;&#34;Return the Jensen-Shannon based dissimilarity.&#34;&#34;&#34;
-        return jensenshannon(
-            pij.flatten(),
-            pipj.flatten(),
-            base=2,
-        )
-
-    @beartype
-    def _nmi(
-        self,
-        pij: Float2DArray,
-        pipj: Float2DArray,
-        pi: Float1DArray,
-        pj: Float1DArray,
-    ) -&gt; float:
-        &#34;&#34;&#34;Return the Jensen-Shannon based dissimilarity.&#34;&#34;&#34;
-        mutual_info: float = _kullback(pij, pipj)
-        normalization: float = self._normalization(pi, pj, pij)
-        return mutual_info / normalization
-
-    @beartype
-    def _normalization(
-        self, pi: np.ndarray, pj: np.ndarray, pij: np.ndarray,
-    ) -&gt; float:
-        &#34;&#34;&#34;Calculate the normalization factor for the MI matrix.&#34;&#34;&#34;
-        method: str = self._normalize_method
-        if method == &#39;joint&#39;:
-            return _entropy(pij)
-
-        func: Callable = {
-            &#39;geometric&#39;: lambda arr: np.sqrt(np.prod(arr)),
-            &#39;arithmetic&#39;: np.mean,
-            &#39;min&#39;: np.min,
-            &#39;max&#39;: np.max,
-        }[method]
-        return func([_entropy(pi), _entropy(pj)])
 
     @beartype
     def _online_correlation(self, X: str) -&gt; FloatMatrix:
@@ -805,7 +581,7 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
             corr = _correlation(X)
             matrix_ = np.abs(corr)
         elif self._metric == &#39;GY&#39; and self._knn_estimate:
-            matrix_ = self._nonlinear_GY_knn(X)
+            matrix_ = _nonlinear_GY_knn(X)
         else:  # &#39;NMI&#39;, &#39;JSD&#39;, &#39;GY
             matrix_ = self._nonlinear_correlation(X)
         self.matrix_: np.ndarray = np.clip(matrix_, a_min=0, a_max=1)
@@ -842,97 +618,25 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
     @beartype
     def _nonlinear_correlation(self, X: Float2DArray) -&gt; FloatMatrix:
         &#34;&#34;&#34;Return the nonlinear correlation.&#34;&#34;&#34;
-        calc_nl_corr: Callable = {
-            &#39;NMI&#39;: self._nmi,
-            &#39;GY&#39;: self._gy,
-            &#39;JSD&#39;: self._jsd,
-        }[self._metric]
+        calc_nl_corr: Callable
+        if self._metric == &#39;NMI&#39;:
+            calc_nl_corr = _nmi_gen(self._normalize_method)
+        elif self._metric == &#39;GY&#39;:
+            calc_nl_corr = _gy
+        else:
+            calc_nl_corr = _jsd
 
         nl_corr: FloatMatrix = np.empty(  # noqa: WPS317
             (self._n_features, self._n_features), dtype=self._dtype,
         )
-        for idx_i in range(self._n_features):
-            xi = X[:, idx_i]
+        for idx_i, xi in enumerate(X.T):
             nl_corr[idx_i, idx_i] = 1
-            for idx_j in range(idx_i + 1, self._n_features):
-                xj = X[:, idx_j]
+            for idx_j, xj in enumerate(X.T[idx_i + 1:], idx_i + 1):
                 nl_corr_ij = calc_nl_corr(*_estimate_densities(xi, xj))
                 nl_corr[idx_i, idx_j] = nl_corr_ij
                 nl_corr[idx_j, idx_i] = nl_corr_ij
 
         return nl_corr
-
-    @beartype
-    def _nonlinear_GY_knn(self, X: Float2DArray) -&gt; FloatMatrix:
-        &#34;&#34;&#34;Gel&#39;fand-Yaglom correlation matrix based on k-nn estimator.
-
-        Return the nonlinear correlation matrix based on Gel&#39;fand-Yaglom
-        based on a reliable knn-estimate of the mutual information.
-
-        &#34;&#34;&#34;
-        nl_knn_corr = _knn_mutual_information(X, self._n_features)
-        return np.sqrt(
-            1 - np.exp(-2 * nl_knn_corr),
-        )
-
-    @beartype
-    def _gy(
-        self,
-        pij: Float2DArray,
-        pipj: Float2DArray,
-        pi: Float1DArray,
-        pj: Float1DArray,
-    ) -&gt; float:
-        &#34;&#34;&#34;Return the dissimilarity based on Gel&#39;fand-Yaglom.&#34;&#34;&#34;
-        mutual_info: float = _kullback(pij, pipj)
-        return np.sqrt(
-            1 - np.exp(-2 * mutual_info),
-        )
-
-    @beartype
-    def _jsd(
-        self,
-        pij: Float2DArray,
-        pipj: Float2DArray,
-        pi: Float1DArray,
-        pj: Float1DArray,
-    ) -&gt; float:
-        &#34;&#34;&#34;Return the Jensen-Shannon based dissimilarity.&#34;&#34;&#34;
-        return jensenshannon(
-            pij.flatten(),
-            pipj.flatten(),
-            base=2,
-        )
-
-    @beartype
-    def _nmi(
-        self,
-        pij: Float2DArray,
-        pipj: Float2DArray,
-        pi: Float1DArray,
-        pj: Float1DArray,
-    ) -&gt; float:
-        &#34;&#34;&#34;Return the Jensen-Shannon based dissimilarity.&#34;&#34;&#34;
-        mutual_info: float = _kullback(pij, pipj)
-        normalization: float = self._normalization(pi, pj, pij)
-        return mutual_info / normalization
-
-    @beartype
-    def _normalization(
-        self, pi: np.ndarray, pj: np.ndarray, pij: np.ndarray,
-    ) -&gt; float:
-        &#34;&#34;&#34;Calculate the normalization factor for the MI matrix.&#34;&#34;&#34;
-        method: str = self._normalize_method
-        if method == &#39;joint&#39;:
-            return _entropy(pij)
-
-        func: Callable = {
-            &#39;geometric&#39;: lambda arr: np.sqrt(np.prod(arr)),
-            &#39;arithmetic&#39;: np.mean,
-            &#39;min&#39;: np.min,
-            &#39;max&#39;: np.max,
-        }[method]
-        return func([_entropy(pi), _entropy(pj)])
 
     @beartype
     def _online_correlation(self, X: str) -&gt; FloatMatrix:
