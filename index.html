@@ -787,7 +787,7 @@ is calculated on the fly. Otherwise, an array is assumed as input X.</dd>
 for the mutual information:</p>
 <ul>
 <li><code>'joint'</code> is the joint entropy</li>
-<li><code>'max'</code>is the maximum of the individual entropies</li>
+<li><code>'max'</code> is the maximum of the individual entropies</li>
 <li><code>'arithmetic'</code> is the mean of the individual entropies</li>
 <li><code>'geometric'</code> is the square root of the product of the individual
 entropies</li>
@@ -882,7 +882,7 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
         for the mutual information:
 
         - `&#39;joint&#39;` is the joint entropy
-        - `&#39;max&#39;`is the maximum of the individual entropies
+        - `&#39;max&#39;` is the maximum of the individual entropies
         - `&#39;arithmetic&#39;` is the mean of the individual entropies
         - `&#39;geometric&#39;` is the square root of the product of the individual
           entropies
@@ -970,7 +970,7 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
                 (
                     &#39;The mutual information estimate based on k-nearest&#39;
                     &#39;neighbors distances is only supported with metric=&#34;GY&#34;&#39;
-                )
+                ),
             )
 
     @singledispatchmethod
@@ -1009,10 +1009,8 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
                 &#39;data has a single feature or array.reshape(1, -1) if it &#39;
                 &#39;contains a single sample.&#39;,
             )
-        n_features: int
-        n_samples: int
-        n_samples, n_features = X.shape
 
+        n_samples, n_features = X.shape
         self._n_samples: int = n_samples
         self._n_features: int = n_features
 
@@ -1080,8 +1078,12 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
 
     @beartype
     def _nonlinear_GY_knn(self, X: Float2DArray) -&gt; FloatMatrix:
-        &#34;&#34;&#34;Return the nonlinear correlation matrix based on Gel&#39;fand-Yaglom
-        based on a reliable knn-estimate of the mutual information.&#34;&#34;&#34;
+        &#34;&#34;&#34;Gel&#39;fand-Yaglom correlation matrix based on k-nn estimator.
+
+        Return the nonlinear correlation matrix based on Gel&#39;fand-Yaglom
+        based on a reliable knn-estimate of the mutual information.
+
+        &#34;&#34;&#34;
         nl_knn_corr = _knn_mutual_information(X, self._n_features)
         return np.sqrt(
             1 - np.exp(-2 * nl_knn_corr),
@@ -1150,17 +1152,13 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
     def _online_correlation(self, X: str) -&gt; FloatMatrix:
         &#34;&#34;&#34;Calculate correlation on the fly.&#34;&#34;&#34;
         self._filename: str = X
-        self._n_features: int = len(
-            next(
-                _data_gen(filename=self._filename, dtype=self._dtype),
-            ),
-        )
-        corr, n = _welford_correlation(
+
+        corr, n_samples, n_features = _welford_correlation(
             filename=self._filename,
             dtype=self._dtype,
-            n_features=self._n_features,
         )
-        self._n_samples: int = n
+        self._n_samples: int = n_samples
+        self._n_features: int = n_features
         return corr</code></pre>
 </details>
 <h3>Methods</h3>
