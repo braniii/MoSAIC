@@ -252,13 +252,13 @@ class Similarity:  # noqa: WPS214
         matrix_: np.ndarray
         # parse data
         if not self._low_memory:
-            raise ValueError(&#39;Mode low_memory=False reuqires X:np.ndarray.&#39;)
+            raise TypeError(&#39;Mode low_memory=False reuqires X:np.ndarray.&#39;)
 
         if self._metric == &#39;correlation&#39;:
             corr = self._online_correlation(X)
             matrix_ = np.abs(corr)
         else:
-            raise ValueError(
+            raise NotImplementedError(
                 &#39;Mode low_memory=True is only implemented for correlation.&#39;,
             )
 
@@ -267,8 +267,6 @@ class Similarity:  # noqa: WPS214
     @beartype
     def _reset(self) -&gt; None:
         &#34;&#34;&#34;Reset internal data-dependent state of correlation.&#34;&#34;&#34;
-        if hasattr(self, &#39;_filename&#39;):  # noqa: WPS421
-            del self._filename  # noqa: WPS420
         if hasattr(self, &#39;matrix_&#39;):  # noqa: WPS421
             del self.matrix_  # noqa: WPS420
 
@@ -595,13 +593,13 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
         matrix_: np.ndarray
         # parse data
         if not self._low_memory:
-            raise ValueError(&#39;Mode low_memory=False reuqires X:np.ndarray.&#39;)
+            raise TypeError(&#39;Mode low_memory=False reuqires X:np.ndarray.&#39;)
 
         if self._metric == &#39;correlation&#39;:
             corr = self._online_correlation(X)
             matrix_ = np.abs(corr)
         else:
-            raise ValueError(
+            raise NotImplementedError(
                 &#39;Mode low_memory=True is only implemented for correlation.&#39;,
             )
 
@@ -610,8 +608,6 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
     @beartype
     def _reset(self) -&gt; None:
         &#34;&#34;&#34;Reset internal data-dependent state of correlation.&#34;&#34;&#34;
-        if hasattr(self, &#39;_filename&#39;):  # noqa: WPS421
-            del self._filename  # noqa: WPS420
         if hasattr(self, &#39;matrix_&#39;):  # noqa: WPS421
             del self.matrix_  # noqa: WPS420
 
