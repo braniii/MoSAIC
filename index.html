@@ -439,7 +439,7 @@ array([list([2, 0]), list([1])], dtype=object)
             raise NotImplementedError(
                 f&#34;mode=&#39;{mode}&#39; needs parameter &#39;n_clusters&#39;&#34;,
             )
-        elif self._n_clusters is not None:
+        elif mode != &#39;kmedoids&#39; and self._n_clusters is not None:
             raise NotImplementedError(
                 f&#34;mode=&#39;{mode}&#39; does not support the usage of &#39;n_clusters&#39;&#34;,
             )
