@@ -1,9 +1,9 @@
 URLS=[
 "mosaic/index.html",
-"mosaic/clustering.html",
+"mosaic/umap_similarity.html",
 "mosaic/similarity.html",
-"mosaic/utils.html",
-"mosaic/umap_similarity.html"
+"mosaic/clustering.html",
+"mosaic/utils.html"
 ];
 INDEX=[
 {
@@ -45,19 +45,19 @@ INDEX=[
 "func":1
 },
 {
-"ref":"mosaic.clustering",
+"ref":"mosaic.umap_similarity",
 "url":1,
-"doc":"Class for clustering the correlation matrices. MIT License Copyright (c) 2021-2022, Daniel Nagel, Georg Diez All rights reserved."
+"doc":"Class for embedding correlation matrix with UMAP. MIT License Copyright (c) 2021-2022, Daniel Nagel, Georg Diez All rights reserved."
 },
 {
-"ref":"mosaic.clustering.Clustering",
+"ref":"mosaic.umap_similarity.UMAPSimilarity",
 "url":1,
-"doc":"Class for clustering a correlation matrix. Parameters      mode : str, default='CPM' the mode which determines the quality function optimized by the Leiden algorithm ('CPM', or 'modularity') or linkage clustering. - 'CPM': will use the constant Potts model on the full, weighted graph - 'modularity': will use modularity on a knn-graph - 'linkage': will use complete-linkage clustering - 'kmedoids': will use $k$-medoids clustering weighted : bool, default=True, If True, the underlying graph has weighted edges. Otherwise, the graph is constructed using the adjacency matrix. n_neighbors : int, default=None, This parameter specifies if the whole matrix is used, or an knn-graph. The default depends on the  mode - 'CPM':  None uses full graph, and - 'modularity':  None uses square root of the number of features. resolution_parameter : float, default=None, Required for mode 'CPM' and 'linkage'. If None, the resolution parameter will be set to the third quartile of  X for  n_neighbors=None and else to the mean value of the knn graph. n_clusters : int, default=None, Required for 'kmedoids'. The number of clusters to form. seed : int, default=None, Use an integer to make the randomness of Leidenalg deterministic. By default uses a random seed if nothing is specified. Attributes      clusters_ : ndarray of shape (n_clusters, ) The result of the clustering process. A list of arrays, each containing all indices (features) for each cluster. labels_ : ndarray of shape (n_features, ) Labels of each feature. matrix_ : ndarray of shape (n_features, n_features) Permuted matrix according to the found clusters. ticks_ : ndarray of shape (n_clusters, ) Get cumulative indices where new cluster starts in  matrix_ . permutation_ : ndarray of shape (n_features, ) Permutation of the input features (corresponds to flattened  clusters_ ). n_neighbors_ : int Only avaiable when using knn graph. Indicates the number of nearest neighbors used for constructin the knn-graph. resolution_param_ : float Only for mode 'CPM' and 'linkage'. Indicates the resolution parameter used for the CPM based Leiden clustering. linkage_matrix_ : ndarray of shape (n_clusters - 1, 4) Only for mode 'linkage'. Holds hierarchicak clustering encoded as a linkage matrix, see [scipy:spatial.distance.linkage](https: docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html). Examples     >>> import mosaic >>> mat = np.array( 1.0, 0.1, 0.9], [0.1, 1.0, 0.1], [0.9, 0.1, 1.0 ) >>> clust = mosaic.Clustering() >>> clust.fit(mat) >>> clust.matrix_ array( 1. , 0.9, 0.1], [0.9, 1. , 0.1], [0.1, 0.1, 1.  ) >>> clust.clusters_ array([list([2, 0]), list([1])], dtype=object) Initialize Clustering class."
+"doc":"Class for embedding similarity matrix with UMAP. For more details on the parameters check the UMAP documentation. Parameters      densmap : bool, default=True If True the density-augmented objective of densMAP is used for optimization. There the local densities are encouraged to be correlated with those in the original space. n_neighbors: int, default=None Size of nearest neighbors used for manifold estimation in UMAP. If  None uses square root of the number of features. n_components: int, default=2 Dimensionality of the local embedding. Attributes      matrix_ : ndarray of shape (n_features, n_features) Normalized pairwise distance matrix of the UMAP embedding. embedding_ : ndarray of shape (n_features, n_components) Coordinates of features in UMAP embedding. n_neighbors_ : int Number of used neighbors. Initialize UMAPSimilarity class."
 },
 {
-"ref":"mosaic.clustering.Clustering.fit",
+"ref":"mosaic.umap_similarity.UMAPSimilarity.fit",
 "url":1,
-"doc":"Clusters the correlation matrix by Leiden clustering on a graph. Parameters      X : ndarray of shape (n_features, n_features) Matrix containing the correlation metric which is clustered. The values should go from [0, 1] where 1 means completely correlated and 0 no correlation. y : Ignored Not used, present for scikit API consistency by convention.",
+"doc":"Fit similarity matrix into UMAP embedding.",
 "func":1
 },
 {
@@ -77,36 +77,36 @@ INDEX=[
 "func":1
 },
 {
-"ref":"mosaic.utils",
+"ref":"mosaic.clustering",
 "url":3,
+"doc":"Class for clustering the correlation matrices. MIT License Copyright (c) 2021-2022, Daniel Nagel, Georg Diez All rights reserved."
+},
+{
+"ref":"mosaic.clustering.Clustering",
+"url":3,
+"doc":"Class for clustering a correlation matrix. Parameters      mode : str, default='CPM' the mode which determines the quality function optimized by the Leiden algorithm ('CPM', or 'modularity') or linkage clustering. - 'CPM': will use the constant Potts model on the full, weighted graph - 'modularity': will use modularity on a knn-graph - 'linkage': will use complete-linkage clustering - 'kmedoids': will use $k$-medoids clustering weighted : bool, default=True, If True, the underlying graph has weighted edges. Otherwise, the graph is constructed using the adjacency matrix. n_neighbors : int, default=None, This parameter specifies if the whole matrix is used, or an knn-graph. The default depends on the  mode - 'CPM':  None uses full graph, and - 'modularity':  None uses square root of the number of features. resolution_parameter : float, default=None, Required for mode 'CPM' and 'linkage'. If None, the resolution parameter will be set to the third quartile of  X for  n_neighbors=None and else to the mean value of the knn graph. n_clusters : int, default=None, Required for 'kmedoids'. The number of clusters to form. seed : int, default=None, Use an integer to make the randomness of Leidenalg deterministic. By default uses a random seed if nothing is specified. Attributes      clusters_ : ndarray of shape (n_clusters, ) The result of the clustering process. A list of arrays, each containing all indices (features) for each cluster. labels_ : ndarray of shape (n_features, ) Labels of each feature. matrix_ : ndarray of shape (n_features, n_features) Permuted matrix according to the found clusters. ticks_ : ndarray of shape (n_clusters, ) Get cumulative indices where new cluster starts in  matrix_ . permutation_ : ndarray of shape (n_features, ) Permutation of the input features (corresponds to flattened  clusters_ ). n_neighbors_ : int Only avaiable when using knn graph. Indicates the number of nearest neighbors used for constructin the knn-graph. resolution_param_ : float Only for mode 'CPM' and 'linkage'. Indicates the resolution parameter used for the CPM based Leiden clustering. linkage_matrix_ : ndarray of shape (n_clusters - 1, 4) Only for mode 'linkage'. Holds hierarchicak clustering encoded as a linkage matrix, see [scipy:spatial.distance.linkage](https: docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html). Examples     >>> import mosaic >>> mat = np.array( 1.0, 0.1, 0.9], [0.1, 1.0, 0.1], [0.9, 0.1, 1.0 ) >>> clust = mosaic.Clustering() >>> clust.fit(mat) >>> clust.matrix_ array( 1. , 0.9, 0.1], [0.9, 1. , 0.1], [0.1, 0.1, 1.  ) >>> clust.clusters_ array([list([2, 0]), list([1])], dtype=object) Initialize Clustering class."
+},
+{
+"ref":"mosaic.clustering.Clustering.fit",
+"url":3,
+"doc":"Clusters the correlation matrix by Leiden clustering on a graph. Parameters      X : ndarray of shape (n_features, n_features) Matrix containing the correlation metric which is clustered. The values should go from [0, 1] where 1 means completely correlated and 0 no correlation. y : Ignored Not used, present for scikit API consistency by convention.",
+"func":1
+},
+{
+"ref":"mosaic.utils",
+"url":4,
 "doc":"Class with helper functions. MIT License Copyright (c) 2021-2022, Daniel Nagel All rights reserved."
 },
 {
 "ref":"mosaic.utils.load_clusters",
-"url":3,
+"url":4,
 "doc":"Load clusters stored from cli. Parameters      filename : str Filename of cluster file. Returns    - clusters : ndarray of shape (n_clusters, ) A list of arrays, each containing all indices (features) for each cluster.",
 "func":1
 },
 {
 "ref":"mosaic.utils.save_clusters",
-"url":3,
+"url":4,
 "doc":"Save clusters from  mosaic.Clustering.clusters_ to txt file. Parameters      filename : str Filename of cluster file. clusters : ndarray of shape (n_clusters, ) A list of arrays, each containing all indices (features) for each cluster.",
-"func":1
-},
-{
-"ref":"mosaic.umap_similarity",
-"url":4,
-"doc":"Class for embedding correlation matrix with UMAP. MIT License Copyright (c) 2021-2022, Daniel Nagel, Georg Diez All rights reserved."
-},
-{
-"ref":"mosaic.umap_similarity.UMAPSimilarity",
-"url":4,
-"doc":"Class for embedding similarity matrix with UMAP. For more details on the parameters check the UMAP documentation. Parameters      densmap : bool, default=True If True the density-augmented objective of densMAP is used for optimization. There the local densities are encouraged to be correlated with those in the original space. n_neighbors: int, default=None Size of nearest neighbors used for manifold estimation in UMAP. If  None uses square root of the number of features. n_components: int, default=2 Dimensionality of the local embedding. Attributes      matrix_ : ndarray of shape (n_features, n_features) Normalized pairwise distance matrix of the UMAP embedding. embedding_ : ndarray of shape (n_features, n_components) Coordinates of features in UMAP embedding. n_neighbors_ : int Number of used neighbors. Initialize UMAPSimilarity class."
-},
-{
-"ref":"mosaic.umap_similarity.UMAPSimilarity.fit",
-"url":4,
-"doc":"Fit similarity matrix into UMAP embedding.",
 "func":1
 }
 ]
