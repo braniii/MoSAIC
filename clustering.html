@@ -79,11 +79,18 @@ def _coarse_clustermatrix(
 
 
 @beartype
-def _sort_coarse_clustermatrix(coarsemat: FloatMatrix) -&gt; Index1DArray:
+def _sort_coarse_clustermatrix(
+    clusterssize: Object1DArray, coarsemat: FloatMatrix,
+) -&gt; Index1DArray:
     &#34;&#34;&#34;Return indices which sort clusters to minimize off-diagonal values.&#34;&#34;&#34;
     nclusters = len(coarsemat)
     clusters = np.empty(nclusters, dtype=object)
     clusters[:] = [[i] for i in range(nclusters)]  # noqa: WPS362
+    # make deep copy of clusterssize
+    coarseclusters = np.empty(nclusters, dtype=object)
+    coarseclusters[:] = [  # noqa: WPS362
+        list(cl) for cl in clusterssize
+    ]
 
     for _ in range(nclusters - 1):
         cmat = _coarse_clustermatrix(clusters, coarsemat)
@@ -91,8 +98,19 @@ def _sort_coarse_clustermatrix(coarsemat: FloatMatrix) -&gt; Index1DArray:
         cmat[np.diag_indices_from(cmat)] = np.nan
         x_idxs, y_idxs = np.where(cmat == np.nanmax(cmat))
 
-        clusters[x_idxs[0]].extend(clusters[y_idxs[0]])
-        clusters = np.delete(clusters, y_idxs[0])
+        # add smaller to larger cluster
+        xi, yi = x_idxs[0], y_idxs[0]
+        x_large, x_small = (xi, yi) if (
+            len(coarseclusters[xi]) &gt;= len(coarseclusters[yi])
+        ) else (yi, xi)
+
+        # merge clusters
+        clusters[x_large].extend(clusters[x_small])
+        clusters = np.delete(clusters, x_small)
+
+        # keep track of clusrer size
+        coarseclusters[x_large].extend(coarseclusters[x_small])
+        coarseclusters = np.delete(coarseclusters, x_small)
 
     return np.asarray(clusters[0], dtype=int)
 
@@ -110,7 +128,7 @@ def _sort_clusters(
     # sort the order of the cluster
     clusters_permuted = clusters[
         _sort_coarse_clustermatrix(
-            _coarse_clustermatrix(clusters, mat),
+            clusters, _coarse_clustermatrix(clusters, mat),
         )
     ]
 
@@ -230,7 +248,7 @@ class Clustering:
             )
 
         if mode == &#39;kmedoids&#39; and self._n_clusters is None:
-            raise NotImplementedError(
+            raise TypeError(
                 f&#34;mode=&#39;{mode}&#39; needs parameter &#39;n_clusters&#39;&#34;,
             )
         elif mode != &#39;kmedoids&#39; and self._n_clusters is not None:
@@ -277,11 +295,12 @@ class Clustering:
             mat = np.copy(X)
         else:
             mat = self._construct_knn_mat(X)
-        # mask diagonal and zero elements
-        mat[mat == 0] = np.nan
-        mat[np.diag_indices_from(mat)] = np.nan
 
         if self._mode in {&#39;CPM&#39;, &#39;linkage&#39;}:
+            # mask diagonal and zero elements
+            mat[mat == 0] = np.nan
+            mat[np.diag_indices_from(mat)] = np.nan
+
             if self._resolution_parameter is None:
                 if self._neighbors is None:
                     third_quartile = 0.75
@@ -434,7 +453,7 @@ class Clustering:
             &#39;method&#39;: &#39;pam&#39;,
         }
 
-        kmedoids = KMedoids(**kmedoids_kwargs, n_clusters=self._n_clusters)
+        kmedoids = KMedoids(n_clusters=self._n_clusters, **kmedoids_kwargs)
         kmedoids.fit(1 - matrix)
         labels = kmedoids.labels_
 
@@ -443,7 +462,7 @@ class Clustering:
         if nclusters != self._n_clusters:
             raise ValueError(
                 f&#39;k-medoids tried to find {self._n_clusters} clusters&#39;
-                f&#39;but only {nclusters} found. Please try a different value.&#39;
+                f&#39;but only {nclusters} found. Please try a different value.&#39;,
             )
         self.n_clusters_: Float2DArray = nclusters
 
@@ -648,7 +667,7 @@ array([list([2, 0]), list([1])], dtype=object)
             )
 
         if mode == &#39;kmedoids&#39; and self._n_clusters is None:
-            raise NotImplementedError(
+            raise TypeError(
                 f&#34;mode=&#39;{mode}&#39; needs parameter &#39;n_clusters&#39;&#34;,
             )
         elif mode != &#39;kmedoids&#39; and self._n_clusters is not None:
@@ -695,11 +714,12 @@ array([list([2, 0]), list([1])], dtype=object)
             mat = np.copy(X)
         else:
             mat = self._construct_knn_mat(X)
-        # mask diagonal and zero elements
-        mat[mat == 0] = np.nan
-        mat[np.diag_indices_from(mat)] = np.nan
 
         if self._mode in {&#39;CPM&#39;, &#39;linkage&#39;}:
+            # mask diagonal and zero elements
+            mat[mat == 0] = np.nan
+            mat[np.diag_indices_from(mat)] = np.nan
+
             if self._resolution_parameter is None:
                 if self._neighbors is None:
                     third_quartile = 0.75
@@ -852,7 +872,7 @@ array([list([2, 0]), list([1])], dtype=object)
             &#39;method&#39;: &#39;pam&#39;,
         }
 
-        kmedoids = KMedoids(**kmedoids_kwargs, n_clusters=self._n_clusters)
+        kmedoids = KMedoids(n_clusters=self._n_clusters, **kmedoids_kwargs)
         kmedoids.fit(1 - matrix)
         labels = kmedoids.labels_
 
@@ -861,7 +881,7 @@ array([list([2, 0]), list([1])], dtype=object)
         if nclusters != self._n_clusters:
             raise ValueError(
                 f&#39;k-medoids tried to find {self._n_clusters} clusters&#39;
-                f&#39;but only {nclusters} found. Please try a different value.&#39;
+                f&#39;but only {nclusters} found. Please try a different value.&#39;,
             )
         self.n_clusters_: Float2DArray = nclusters
 
@@ -920,11 +940,12 @@ def fit(self, X: SimilarityMatrix, y: Optional[np.ndarray] = None) -&gt; None:
         mat = np.copy(X)
     else:
         mat = self._construct_knn_mat(X)
-    # mask diagonal and zero elements
-    mat[mat == 0] = np.nan
-    mat[np.diag_indices_from(mat)] = np.nan
 
     if self._mode in {&#39;CPM&#39;, &#39;linkage&#39;}:
+        # mask diagonal and zero elements
+        mat[mat == 0] = np.nan
+        mat[np.diag_indices_from(mat)] = np.nan
+
         if self._resolution_parameter is None:
             if self._neighbors is None:
                 third_quartile = 0.75
