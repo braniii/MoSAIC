@@ -171,9 +171,10 @@ class Clustering:
         is constructed using the adjacency matrix.
 
     n_neighbors : int, default=None,
-        This parameter specifies if the whole matrix is used, or an knn-graph.
+        This parameter specifies whether the whole matrix should be used, or 
+        a knn-graph, which reduces the required memory. 
         The default depends on the `mode`
-        - &#39;CPM&#39;: `None` uses full graph, and
+        - &#39;CPM&#39;: `None` uses the full graph, and
         - &#39;modularity&#39;: `None` uses square root of the number of features.
 
     resolution_parameter : float, default=None,
@@ -182,7 +183,8 @@ class Clustering:
         `n_neighbors=None` and else to the mean value of the knn graph.
 
     n_clusters : int, default=None,
-        Required for &#39;kmedoids&#39;. The number of clusters to form.
+        Required for &#39;kmedoids&#39;. The number of medoids which will constitute
+        the later clusters.
 
     seed : int, default=None,
         Use an integer to make the randomness of Leidenalg deterministic. By
@@ -192,16 +194,17 @@ class Clustering:
     ----------
     clusters_ : ndarray of shape (n_clusters, )
         The result of the clustering process. A list of arrays, each
-        containing all indices (features) for each cluster.
+        containing all indices (features) corresponging to each cluster.
 
     labels_ : ndarray of shape (n_features, )
         Labels of each feature.
 
     matrix_ : ndarray of shape (n_features, n_features)
-        Permuted matrix according to the found clusters.
+        Permuted matrix according to the determined clusters.
 
     ticks_ : ndarray of shape (n_clusters, )
-        Get cumulative indices where new cluster starts in `matrix_`.
+        The cumulative number of features containing to the clusters.
+        May be used as ticks for plotting `matrix_`.
 
     permutation_ : ndarray of shape (n_features, )
         Permutation of the input features (corresponds to flattened
@@ -216,8 +219,8 @@ class Clustering:
         used for the CPM based Leiden clustering.
 
     linkage_matrix_ : ndarray of shape (n_clusters - 1, 4)
-        Only for mode &#39;linkage&#39;. Holds hierarchicak clustering encoded as a
-        linkage matrix, see
+        Only for mode &#39;linkage&#39;. Contains the hierarchical clustering encoded as 
+        a linkage matrix, see
         [scipy:spatial.distance.linkage](https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html).
 
     Examples
@@ -516,16 +519,18 @@ algorithm ('CPM', or 'modularity') or linkage clustering.
 <dd>If True, the underlying graph has weighted edges. Otherwise, the graph
 is constructed using the adjacency matrix.</dd>
 <dt><strong><code>n_neighbors</code></strong> :&ensp;<code>int</code>, default=<code>None,</code></dt>
-<dd>This parameter specifies if the whole matrix is used, or an knn-graph.
+<dd>This parameter specifies whether the whole matrix should be used, or
+a knn-graph, which reduces the required memory.
 The default depends on the <code>mode</code>
-- 'CPM': <code>None</code> uses full graph, and
+- 'CPM': <code>None</code> uses the full graph, and
 - 'modularity': <code>None</code> uses square root of the number of features.</dd>
 <dt><strong><code>resolution_parameter</code></strong> :&ensp;<code>float</code>, default=<code>None,</code></dt>
 <dd>Required for mode 'CPM' and 'linkage'. If None, the resolution
 parameter will be set to the third quartile of <code>X</code> for
 <code>n_neighbors=None</code> and else to the mean value of the knn graph.</dd>
 <dt><strong><code>n_clusters</code></strong> :&ensp;<code>int</code>, default=<code>None,</code></dt>
-<dd>Required for 'kmedoids'. The number of clusters to form.</dd>
+<dd>Required for 'kmedoids'. The number of medoids which will constitute
+the later clusters.</dd>
 <dt><strong><code>seed</code></strong> :&ensp;<code>int</code>, default=<code>None,</code></dt>
 <dd>Use an integer to make the randomness of Leidenalg deterministic. By
 default uses a random seed if nothing is specified.</dd>
@@ -534,13 +539,14 @@ default uses a random seed if nothing is specified.</dd>
 <dl>
 <dt><strong><code>clusters_</code></strong> :&ensp;<code>ndarray</code> of <code>shape (n_clusters, )</code></dt>
 <dd>The result of the clustering process. A list of arrays, each
-containing all indices (features) for each cluster.</dd>
+containing all indices (features) corresponging to each cluster.</dd>
 <dt><strong><code>labels_</code></strong> :&ensp;<code>ndarray</code> of <code>shape (n_features, )</code></dt>
 <dd>Labels of each feature.</dd>
 <dt><strong><code>matrix_</code></strong> :&ensp;<code>ndarray</code> of <code>shape (n_features, n_features)</code></dt>
-<dd>Permuted matrix according to the found clusters.</dd>
+<dd>Permuted matrix according to the determined clusters.</dd>
 <dt><strong><code>ticks_</code></strong> :&ensp;<code>ndarray</code> of <code>shape (n_clusters, )</code></dt>
-<dd>Get cumulative indices where new cluster starts in <code>matrix_</code>.</dd>
+<dd>The cumulative number of features containing to the clusters.
+May be used as ticks for plotting <code>matrix_</code>.</dd>
 <dt><strong><code>permutation_</code></strong> :&ensp;<code>ndarray</code> of <code>shape (n_features, )</code></dt>
 <dd>Permutation of the input features (corresponds to flattened
 <code>clusters_</code>).</dd>
@@ -551,8 +557,8 @@ neighbors used for constructin the knn-graph.</dd>
 <dd>Only for mode 'CPM' and 'linkage'. Indicates the resolution parameter
 used for the CPM based Leiden clustering.</dd>
 <dt><strong><code>linkage_matrix_</code></strong> :&ensp;<code>ndarray</code> of <code>shape (n_clusters - 1, 4)</code></dt>
-<dd>Only for mode 'linkage'. Holds hierarchicak clustering encoded as a
-linkage matrix, see
+<dd>Only for mode 'linkage'. Contains the hierarchical clustering encoded as
+a linkage matrix, see
 <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html">scipy:spatial.distance.linkage</a>.</dd>
 </dl>
 <h2 id="examples">Examples</h2>
@@ -590,9 +596,10 @@ array([list([2, 0]), list([1])], dtype=object)
         is constructed using the adjacency matrix.
 
     n_neighbors : int, default=None,
-        This parameter specifies if the whole matrix is used, or an knn-graph.
+        This parameter specifies whether the whole matrix should be used, or 
+        a knn-graph, which reduces the required memory. 
         The default depends on the `mode`
-        - &#39;CPM&#39;: `None` uses full graph, and
+        - &#39;CPM&#39;: `None` uses the full graph, and
         - &#39;modularity&#39;: `None` uses square root of the number of features.
 
     resolution_parameter : float, default=None,
@@ -601,7 +608,8 @@ array([list([2, 0]), list([1])], dtype=object)
         `n_neighbors=None` and else to the mean value of the knn graph.
 
     n_clusters : int, default=None,
-        Required for &#39;kmedoids&#39;. The number of clusters to form.
+        Required for &#39;kmedoids&#39;. The number of medoids which will constitute
+        the later clusters.
 
     seed : int, default=None,
         Use an integer to make the randomness of Leidenalg deterministic. By
@@ -611,16 +619,17 @@ array([list([2, 0]), list([1])], dtype=object)
     ----------
     clusters_ : ndarray of shape (n_clusters, )
         The result of the clustering process. A list of arrays, each
-        containing all indices (features) for each cluster.
+        containing all indices (features) corresponging to each cluster.
 
     labels_ : ndarray of shape (n_features, )
         Labels of each feature.
 
     matrix_ : ndarray of shape (n_features, n_features)
-        Permuted matrix according to the found clusters.
+        Permuted matrix according to the determined clusters.
 
     ticks_ : ndarray of shape (n_clusters, )
-        Get cumulative indices where new cluster starts in `matrix_`.
+        The cumulative number of features containing to the clusters.
+        May be used as ticks for plotting `matrix_`.
 
     permutation_ : ndarray of shape (n_features, )
         Permutation of the input features (corresponds to flattened
@@ -635,8 +644,8 @@ array([list([2, 0]), list([1])], dtype=object)
         used for the CPM based Leiden clustering.
 
     linkage_matrix_ : ndarray of shape (n_clusters - 1, 4)
-        Only for mode &#39;linkage&#39;. Holds hierarchicak clustering encoded as a
-        linkage matrix, see
+        Only for mode &#39;linkage&#39;. Contains the hierarchical clustering encoded as 
+        a linkage matrix, see
         [scipy:spatial.distance.linkage](https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html).
 
     Examples
