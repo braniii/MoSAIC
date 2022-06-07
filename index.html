@@ -312,8 +312,8 @@ neighbors used for constructin the knn-graph.</dd>
 <dd>Only for mode 'CPM' and 'linkage'. Indicates the resolution parameter
 used for the CPM based Leiden clustering.</dd>
 <dt><strong><code>linkage_matrix_</code></strong> :&ensp;<code>ndarray</code> of <code>shape (n_clusters - 1, 4)</code></dt>
-<dd>Only for mode 'linkage'. Contains the hierarchical clustering encoded as
-a linkage matrix, see
+<dd>Only for mode 'linkage'. Contains the hierarchical clustering encoded
+as a linkage matrix, see
 <a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html">scipy:spatial.distance.linkage</a>.</dd>
 </dl>
 <h2 id="examples">Examples</h2>
@@ -351,8 +351,8 @@ array([list([2, 0]), list([1])], dtype=object)
         is constructed using the adjacency matrix.
 
     n_neighbors : int, default=None,
-        This parameter specifies whether the whole matrix should be used, or 
-        a knn-graph, which reduces the required memory. 
+        This parameter specifies whether the whole matrix should be used, or
+        a knn-graph, which reduces the required memory.
         The default depends on the `mode`
         - &#39;CPM&#39;: `None` uses the full graph, and
         - &#39;modularity&#39;: `None` uses square root of the number of features.
@@ -399,8 +399,8 @@ array([list([2, 0]), list([1])], dtype=object)
         used for the CPM based Leiden clustering.
 
     linkage_matrix_ : ndarray of shape (n_clusters - 1, 4)
-        Only for mode &#39;linkage&#39;. Contains the hierarchical clustering encoded as 
-        a linkage matrix, see
+        Only for mode &#39;linkage&#39;. Contains the hierarchical clustering encoded
+        as a linkage matrix, see
         [scipy:spatial.distance.linkage](https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html).
 
     Examples
