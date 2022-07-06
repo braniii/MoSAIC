@@ -48,11 +48,15 @@ from beartype import beartype
 from beartype.typing import Any, Dict, Optional
 from scipy.cluster.hierarchy import cut_tree, linkage
 from scipy.spatial.distance import squareform
+from sklearn.base import BaseEstimator, ClusterMixin
 from sklearn.neighbors import NearestNeighbors
+from sklearn.metrics import silhouette_score
+from sklearn.utils.validation import check_is_fitted
 from sklearn_extra.cluster import KMedoids
 
 from mosaic._typing import (  # noqa: WPS436
     ClusteringModeString,
+    Float,
     Float2DArray,
     FloatMatrix,
     Index1DArray,
@@ -153,7 +157,7 @@ def _sort_clusters(
     return clusters_permuted
 
 
-class Clustering:
+class Clustering(ClusterMixin, BaseEstimator):
     r&#34;&#34;&#34;Class for clustering a correlation matrix.
 
     Parameters
@@ -166,27 +170,27 @@ class Clustering:
         - &#39;linkage&#39;: will use complete-linkage clustering
         - &#39;kmedoids&#39;: will use $k$-medoids clustering
 
-    weighted : bool, default=True,
+    weighted : bool, default=True
         If True, the underlying graph has weighted edges. Otherwise, the graph
         is constructed using the adjacency matrix.
 
-    n_neighbors : int, default=None,
+    n_neighbors : int, default=None
         This parameter specifies whether the whole matrix should be used, or
         a knn-graph, which reduces the required memory.
         The default depends on the `mode`
         - &#39;CPM&#39;: `None` uses the full graph, and
         - &#39;modularity&#39;: `None` uses square root of the number of features.
 
-    resolution_parameter : float, default=None,
+    resolution_parameter : float, default=None
         Required for mode &#39;CPM&#39; and &#39;linkage&#39;. If None, the resolution
         parameter will be set to the third quartile of `X` for
         `n_neighbors=None` and else to the mean value of the knn graph.
 
-    n_clusters : int, default=None,
+    n_clusters : int, default=None
         Required for &#39;kmedoids&#39;. The number of medoids which will constitute
         the later clusters.
 
-    seed : int, default=None,
+    seed : int, default=None
         Use an integer to make the randomness of Leidenalg deterministic. By
         default uses a random seed if nothing is specified.
 
@@ -250,28 +254,28 @@ class Clustering:
         seed: Optional[int] = None,
     ) -&gt; None:
         &#34;&#34;&#34;Initialize Clustering class.&#34;&#34;&#34;
-        self._mode: ClusteringModeString = mode
-        self._weighted: bool = weighted
-        self._neighbors: Optional[PositiveInt] = n_neighbors
-        self._seed: Optional[int] = seed
-        self._n_clusters: Optional[PositiveInt] = n_clusters
+        self.mode: ClusteringModeString = mode
+        self.weighted: bool = weighted
+        self.n_neighbors: Optional[PositiveInt] = n_neighbors
+        self.seed: Optional[int] = seed
+        self.n_clusters: Optional[PositiveInt] = n_clusters
 
-        if mode in {&#39;linkage&#39;, &#39;kmedoids&#39;} and self._neighbors is not None:
+        if mode in {&#39;linkage&#39;, &#39;kmedoids&#39;} and self.n_neighbors is not None:
             raise NotImplementedError(
                 f&#34;mode=&#39;{mode}&#39; does not support knn-graphs.&#34;,
             )
 
-        if mode == &#39;kmedoids&#39; and self._n_clusters is None:
+        if mode == &#39;kmedoids&#39; and self.n_clusters is None:
             raise TypeError(
                 f&#34;mode=&#39;{mode}&#39; needs parameter &#39;n_clusters&#39;&#34;,
             )
-        elif mode != &#39;kmedoids&#39; and self._n_clusters is not None:
+        elif mode != &#39;kmedoids&#39; and self.n_clusters is not None:
             raise NotImplementedError(
                 f&#34;mode=&#39;{mode}&#39; does not support the usage of &#39;n_clusters&#39;&#34;,
             )
 
         if mode in {&#39;CPM&#39;, &#39;linkage&#39;}:
-            self._resolution_parameter: Optional[NumInRange0to1] = (
+            self.resolution_parameter: Optional[NumInRange0to1] = (
                 resolution_parameter
             )
             if not weighted:
@@ -303,38 +307,38 @@ class Clustering:
 
         # prepare matric for graph construction
         mat: FloatMatrix
-        if self._mode in {&#39;linkage&#39;, &#39;kmedoids&#39;}:
+        if self.mode in {&#39;linkage&#39;, &#39;kmedoids&#39;}:
             mat = np.copy(X)
-        elif self._mode == &#39;CPM&#39; and self._neighbors is None:
+        elif self.mode == &#39;CPM&#39; and self.n_neighbors is None:
             mat = np.copy(X)
         else:
             mat = self._construct_knn_mat(X)
 
-        if self._mode in {&#39;CPM&#39;, &#39;linkage&#39;}:
+        if self.mode in {&#39;CPM&#39;, &#39;linkage&#39;}:
             # mask diagonal and zero elements
             mat[mat == 0] = np.nan
             mat[np.diag_indices_from(mat)] = np.nan
 
-            if self._resolution_parameter is None:
-                if self._neighbors is None:
+            if self.resolution_parameter is None:
+                if self.n_neighbors is None:
                     third_quartile = 0.75
-                    self._resolution_parameter = np.nanquantile(
+                    self.resolution_parameter = np.nanquantile(
                         mat, third_quartile,
                     )
                 else:
-                    self._resolution_parameter = np.nanmean(mat)
+                    self.resolution_parameter = np.nanmean(mat)
 
             self.resolution_param_: NumInRange0to1 = (
-                self._resolution_parameter
+                self.resolution_parameter
             )
 
         # create graph
         mat[np.isnan(mat)] = 0
 
         clusters: Object1DArray
-        if self._mode == &#39;linkage&#39;:
+        if self.mode == &#39;linkage&#39;:
             clusters = self._clustering_linkage(mat)
-        elif self._mode == &#39;kmedoids&#39;:
+        elif self.mode == &#39;kmedoids&#39;:
             clusters = self._clustering_kmedoids(mat)
         else:  # _mode in {&#39;CPM&#39;, &#39;modularity&#39;}
             graph: ig.Graph = ig.Graph.Weighted_Adjacency(
@@ -354,6 +358,73 @@ class Clustering:
         for idx, cluster in enumerate(self.clusters_):
             labels[cluster] = idx
         self.labels_: Index1DArray = labels
+
+    @beartype
+    def fit_predict(
+        self, X: SimilarityMatrix, y: Optional[np.ndarray] = None,
+    ) -&gt; Index1DArray:
+        &#34;&#34;&#34;Clusters the correlation matrix by Leiden clustering on a graph.
+
+        Parameters
+        ----------
+        X : ndarray of shape (n_features, n_features)
+            Matrix containing the correlation metric which is clustered. The
+            values should go from [0, 1] where 1 means completely correlated
+            and 0 no correlation.
+
+        y : Ignored
+            Not used, present for scikit API consistency by convention.
+
+        Returns
+        -------
+        labels : ndarray of shape (n_samples,)
+            Cluster labels.
+
+        &#34;&#34;&#34;
+        return super().fit_predict(X, y)
+
+    @beartype
+    def score(
+        self,
+        X: SimilarityMatrix,
+        y: Optional[np.ndarray] = None,
+        sample_weight: Optional[np.ndarray] = None,
+    ) -&gt; Float:
+        &#34;&#34;&#34;Estimate silhouette_score of new correlation matrix.
+
+        Parameters
+        ----------
+        X : ndarray of shape (n_features, n_features)
+            New matrix containing the correlation metric to score. The
+            values should go from [0, 1] where 1 means completely correlated
+            and 0 no correlation.
+
+        y : Ignored
+            Not used, present for scikit API consistency by convention.
+
+        sample_weight: Ignored
+            Not used, present for scikit API consistency by convention.
+
+        Returns
+        -------
+        score : float
+            Silhouette score of new correlation matrix based on fitted labels.
+
+        &#34;&#34;&#34;
+        check_is_fitted(self, attributes=[&#39;labels_&#39;, &#39;matrix_&#39;])
+
+        n_labels = len(self.labels_)
+        n_unique_labels = len(np.unique(self.labels_))
+
+        if n_labels != len(X):
+            raise ValueError(
+                f&#39;Dimension of X d={len(X):.0f} needs to agree with the &#39;
+                f&#39;dimension of the fitted data d={n_labels:.0f}.&#39;,
+            )
+
+        if n_unique_labels in {1, n_labels}:
+            return -1.0
+        return silhouette_score(X, labels=self.labels_)
 
     @beartype
     def _reset(self) -&gt; None:
@@ -377,22 +448,22 @@ class Clustering:
     @beartype
     def _construct_knn_mat(self, matrix: FloatMatrix) -&gt; FloatMatrix:
         &#34;&#34;&#34;Construct the knn matrix.&#34;&#34;&#34;
-        if self._neighbors is None:
+        if self.n_neighbors is None:
             n_features = len(matrix)
-            self._neighbors = np.ceil(np.sqrt(n_features)).astype(int)
-        elif self._neighbors &gt;= len(matrix):
+            self.n_neighbors = np.ceil(np.sqrt(n_features)).astype(int)
+        elif self.n_neighbors &gt;= len(matrix):
             raise ValueError(
                 &#39;The number of nearest neighbors must be smaller than the &#39;
                 &#39;number of features.&#39;,
             )
-        self.n_neighbors_: PositiveInt = self._neighbors
+        self.n_neighbors_: PositiveInt = self.n_neighbors
 
         neigh = NearestNeighbors(
-            n_neighbors=self._neighbors,
+            n_neighbors=self.n_neighbors,
             metric=&#39;precomputed&#39;,
         )
         neigh.fit(1 - matrix)
-        if self._weighted:
+        if self.weighted:
             dist_mat = neigh.kneighbors_graph(mode=&#39;distance&#39;).toarray()
             dist_mat[dist_mat == 0] = 1
             return 1 - dist_mat
@@ -402,7 +473,7 @@ class Clustering:
     def _setup_leiden_kwargs(self, graph: ig.Graph) -&gt; Dict[str, Any]:
         &#34;&#34;&#34;Set up the parameters for the Leiden clustering.&#34;&#34;&#34;
         kwargs_leiden = {&#39;n_iterations&#39;: -1}
-        if self._mode == &#39;CPM&#39;:
+        if self.mode == &#39;CPM&#39;:
             kwargs_leiden[&#39;partition_type&#39;] = la.CPMVertexPartition
             kwargs_leiden[
                 &#39;resolution_parameter&#39;
@@ -411,10 +482,10 @@ class Clustering:
             kwargs_leiden[
                 &#39;partition_type&#39;
             ] = la.ModularityVertexPartition
-        if self._weighted:
+        if self.weighted:
             kwargs_leiden[&#39;weights&#39;] = graph.es[&#39;weight&#39;]
 
-        kwargs_leiden[&#39;seed&#39;] = self._seed
+        kwargs_leiden[&#39;seed&#39;] = self.seed
 
         return kwargs_leiden
 
@@ -467,15 +538,15 @@ class Clustering:
             &#39;method&#39;: &#39;pam&#39;,
         }
 
-        kmedoids = KMedoids(n_clusters=self._n_clusters, **kmedoids_kwargs)
+        kmedoids = KMedoids(n_clusters=self.n_clusters, **kmedoids_kwargs)
         kmedoids.fit(1 - matrix)
         labels = kmedoids.labels_
 
         # store number of clusters
         nclusters: int = len(np.unique(labels))
-        if nclusters != self._n_clusters:
+        if nclusters != self.n_clusters:
             raise ValueError(
-                f&#39;k-medoids tried to find {self._n_clusters} clusters&#39;
+                f&#39;k-medoids tried to find {self.n_clusters} clusters&#39;
                 f&#39;but only {nclusters} found. Please try a different value.&#39;,
             )
         self.n_clusters_: Float2DArray = nclusters
@@ -515,23 +586,23 @@ algorithm ('CPM', or 'modularity') or linkage clustering.
 - 'modularity': will use modularity on a knn-graph
 - 'linkage': will use complete-linkage clustering
 - 'kmedoids': will use $k$-medoids clustering</dd>
-<dt><strong><code>weighted</code></strong> :&ensp;<code>bool</code>, default=<code>True,</code></dt>
+<dt><strong><code>weighted</code></strong> :&ensp;<code>bool</code>, default=<code>True</code></dt>
 <dd>If True, the underlying graph has weighted edges. Otherwise, the graph
 is constructed using the adjacency matrix.</dd>
-<dt><strong><code>n_neighbors</code></strong> :&ensp;<code>int</code>, default=<code>None,</code></dt>
+<dt><strong><code>n_neighbors</code></strong> :&ensp;<code>int</code>, default=<code>None</code></dt>
 <dd>This parameter specifies whether the whole matrix should be used, or
 a knn-graph, which reduces the required memory.
 The default depends on the <code>mode</code>
 - 'CPM': <code>None</code> uses the full graph, and
 - 'modularity': <code>None</code> uses square root of the number of features.</dd>
-<dt><strong><code>resolution_parameter</code></strong> :&ensp;<code>float</code>, default=<code>None,</code></dt>
+<dt><strong><code>resolution_parameter</code></strong> :&ensp;<code>float</code>, default=<code>None</code></dt>
 <dd>Required for mode 'CPM' and 'linkage'. If None, the resolution
 parameter will be set to the third quartile of <code>X</code> for
 <code>n_neighbors=None</code> and else to the mean value of the knn graph.</dd>
-<dt><strong><code>n_clusters</code></strong> :&ensp;<code>int</code>, default=<code>None,</code></dt>
+<dt><strong><code>n_clusters</code></strong> :&ensp;<code>int</code>, default=<code>None</code></dt>
 <dd>Required for 'kmedoids'. The number of medoids which will constitute
 the later clusters.</dd>
-<dt><strong><code>seed</code></strong> :&ensp;<code>int</code>, default=<code>None,</code></dt>
+<dt><strong><code>seed</code></strong> :&ensp;<code>int</code>, default=<code>None</code></dt>
 <dd>Use an integer to make the randomness of Leidenalg deterministic. By
 default uses a random seed if nothing is specified.</dd>
 </dl>
@@ -578,7 +649,7 @@ array([list([2, 0]), list([1])], dtype=object)
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Clustering:
+<pre><code class="python">class Clustering(ClusterMixin, BaseEstimator):
     r&#34;&#34;&#34;Class for clustering a correlation matrix.
 
     Parameters
@@ -591,27 +662,27 @@ array([list([2, 0]), list([1])], dtype=object)
         - &#39;linkage&#39;: will use complete-linkage clustering
         - &#39;kmedoids&#39;: will use $k$-medoids clustering
 
-    weighted : bool, default=True,
+    weighted : bool, default=True
         If True, the underlying graph has weighted edges. Otherwise, the graph
         is constructed using the adjacency matrix.
 
-    n_neighbors : int, default=None,
+    n_neighbors : int, default=None
         This parameter specifies whether the whole matrix should be used, or
         a knn-graph, which reduces the required memory.
         The default depends on the `mode`
         - &#39;CPM&#39;: `None` uses the full graph, and
         - &#39;modularity&#39;: `None` uses square root of the number of features.
 
-    resolution_parameter : float, default=None,
+    resolution_parameter : float, default=None
         Required for mode &#39;CPM&#39; and &#39;linkage&#39;. If None, the resolution
         parameter will be set to the third quartile of `X` for
         `n_neighbors=None` and else to the mean value of the knn graph.
 
-    n_clusters : int, default=None,
+    n_clusters : int, default=None
         Required for &#39;kmedoids&#39;. The number of medoids which will constitute
         the later clusters.
 
-    seed : int, default=None,
+    seed : int, default=None
         Use an integer to make the randomness of Leidenalg deterministic. By
         default uses a random seed if nothing is specified.
 
@@ -675,28 +746,28 @@ array([list([2, 0]), list([1])], dtype=object)
         seed: Optional[int] = None,
     ) -&gt; None:
         &#34;&#34;&#34;Initialize Clustering class.&#34;&#34;&#34;
-        self._mode: ClusteringModeString = mode
-        self._weighted: bool = weighted
-        self._neighbors: Optional[PositiveInt] = n_neighbors
-        self._seed: Optional[int] = seed
-        self._n_clusters: Optional[PositiveInt] = n_clusters
+        self.mode: ClusteringModeString = mode
+        self.weighted: bool = weighted
+        self.n_neighbors: Optional[PositiveInt] = n_neighbors
+        self.seed: Optional[int] = seed
+        self.n_clusters: Optional[PositiveInt] = n_clusters
 
-        if mode in {&#39;linkage&#39;, &#39;kmedoids&#39;} and self._neighbors is not None:
+        if mode in {&#39;linkage&#39;, &#39;kmedoids&#39;} and self.n_neighbors is not None:
             raise NotImplementedError(
                 f&#34;mode=&#39;{mode}&#39; does not support knn-graphs.&#34;,
             )
 
-        if mode == &#39;kmedoids&#39; and self._n_clusters is None:
+        if mode == &#39;kmedoids&#39; and self.n_clusters is None:
             raise TypeError(
                 f&#34;mode=&#39;{mode}&#39; needs parameter &#39;n_clusters&#39;&#34;,
             )
-        elif mode != &#39;kmedoids&#39; and self._n_clusters is not None:
+        elif mode != &#39;kmedoids&#39; and self.n_clusters is not None:
             raise NotImplementedError(
                 f&#34;mode=&#39;{mode}&#39; does not support the usage of &#39;n_clusters&#39;&#34;,
             )
 
         if mode in {&#39;CPM&#39;, &#39;linkage&#39;}:
-            self._resolution_parameter: Optional[NumInRange0to1] = (
+            self.resolution_parameter: Optional[NumInRange0to1] = (
                 resolution_parameter
             )
             if not weighted:
@@ -728,38 +799,38 @@ array([list([2, 0]), list([1])], dtype=object)
 
         # prepare matric for graph construction
         mat: FloatMatrix
-        if self._mode in {&#39;linkage&#39;, &#39;kmedoids&#39;}:
+        if self.mode in {&#39;linkage&#39;, &#39;kmedoids&#39;}:
             mat = np.copy(X)
-        elif self._mode == &#39;CPM&#39; and self._neighbors is None:
+        elif self.mode == &#39;CPM&#39; and self.n_neighbors is None:
             mat = np.copy(X)
         else:
             mat = self._construct_knn_mat(X)
 
-        if self._mode in {&#39;CPM&#39;, &#39;linkage&#39;}:
+        if self.mode in {&#39;CPM&#39;, &#39;linkage&#39;}:
             # mask diagonal and zero elements
             mat[mat == 0] = np.nan
             mat[np.diag_indices_from(mat)] = np.nan
 
-            if self._resolution_parameter is None:
-                if self._neighbors is None:
+            if self.resolution_parameter is None:
+                if self.n_neighbors is None:
                     third_quartile = 0.75
-                    self._resolution_parameter = np.nanquantile(
+                    self.resolution_parameter = np.nanquantile(
                         mat, third_quartile,
                     )
                 else:
-                    self._resolution_parameter = np.nanmean(mat)
+                    self.resolution_parameter = np.nanmean(mat)
 
             self.resolution_param_: NumInRange0to1 = (
-                self._resolution_parameter
+                self.resolution_parameter
             )
 
         # create graph
         mat[np.isnan(mat)] = 0
 
         clusters: Object1DArray
-        if self._mode == &#39;linkage&#39;:
+        if self.mode == &#39;linkage&#39;:
             clusters = self._clustering_linkage(mat)
-        elif self._mode == &#39;kmedoids&#39;:
+        elif self.mode == &#39;kmedoids&#39;:
             clusters = self._clustering_kmedoids(mat)
         else:  # _mode in {&#39;CPM&#39;, &#39;modularity&#39;}
             graph: ig.Graph = ig.Graph.Weighted_Adjacency(
@@ -779,6 +850,73 @@ array([list([2, 0]), list([1])], dtype=object)
         for idx, cluster in enumerate(self.clusters_):
             labels[cluster] = idx
         self.labels_: Index1DArray = labels
+
+    @beartype
+    def fit_predict(
+        self, X: SimilarityMatrix, y: Optional[np.ndarray] = None,
+    ) -&gt; Index1DArray:
+        &#34;&#34;&#34;Clusters the correlation matrix by Leiden clustering on a graph.
+
+        Parameters
+        ----------
+        X : ndarray of shape (n_features, n_features)
+            Matrix containing the correlation metric which is clustered. The
+            values should go from [0, 1] where 1 means completely correlated
+            and 0 no correlation.
+
+        y : Ignored
+            Not used, present for scikit API consistency by convention.
+
+        Returns
+        -------
+        labels : ndarray of shape (n_samples,)
+            Cluster labels.
+
+        &#34;&#34;&#34;
+        return super().fit_predict(X, y)
+
+    @beartype
+    def score(
+        self,
+        X: SimilarityMatrix,
+        y: Optional[np.ndarray] = None,
+        sample_weight: Optional[np.ndarray] = None,
+    ) -&gt; Float:
+        &#34;&#34;&#34;Estimate silhouette_score of new correlation matrix.
+
+        Parameters
+        ----------
+        X : ndarray of shape (n_features, n_features)
+            New matrix containing the correlation metric to score. The
+            values should go from [0, 1] where 1 means completely correlated
+            and 0 no correlation.
+
+        y : Ignored
+            Not used, present for scikit API consistency by convention.
+
+        sample_weight: Ignored
+            Not used, present for scikit API consistency by convention.
+
+        Returns
+        -------
+        score : float
+            Silhouette score of new correlation matrix based on fitted labels.
+
+        &#34;&#34;&#34;
+        check_is_fitted(self, attributes=[&#39;labels_&#39;, &#39;matrix_&#39;])
+
+        n_labels = len(self.labels_)
+        n_unique_labels = len(np.unique(self.labels_))
+
+        if n_labels != len(X):
+            raise ValueError(
+                f&#39;Dimension of X d={len(X):.0f} needs to agree with the &#39;
+                f&#39;dimension of the fitted data d={n_labels:.0f}.&#39;,
+            )
+
+        if n_unique_labels in {1, n_labels}:
+            return -1.0
+        return silhouette_score(X, labels=self.labels_)
 
     @beartype
     def _reset(self) -&gt; None:
@@ -802,22 +940,22 @@ array([list([2, 0]), list([1])], dtype=object)
     @beartype
     def _construct_knn_mat(self, matrix: FloatMatrix) -&gt; FloatMatrix:
         &#34;&#34;&#34;Construct the knn matrix.&#34;&#34;&#34;
-        if self._neighbors is None:
+        if self.n_neighbors is None:
             n_features = len(matrix)
-            self._neighbors = np.ceil(np.sqrt(n_features)).astype(int)
-        elif self._neighbors &gt;= len(matrix):
+            self.n_neighbors = np.ceil(np.sqrt(n_features)).astype(int)
+        elif self.n_neighbors &gt;= len(matrix):
             raise ValueError(
                 &#39;The number of nearest neighbors must be smaller than the &#39;
                 &#39;number of features.&#39;,
             )
-        self.n_neighbors_: PositiveInt = self._neighbors
+        self.n_neighbors_: PositiveInt = self.n_neighbors
 
         neigh = NearestNeighbors(
-            n_neighbors=self._neighbors,
+            n_neighbors=self.n_neighbors,
             metric=&#39;precomputed&#39;,
         )
         neigh.fit(1 - matrix)
-        if self._weighted:
+        if self.weighted:
             dist_mat = neigh.kneighbors_graph(mode=&#39;distance&#39;).toarray()
             dist_mat[dist_mat == 0] = 1
             return 1 - dist_mat
@@ -827,7 +965,7 @@ array([list([2, 0]), list([1])], dtype=object)
     def _setup_leiden_kwargs(self, graph: ig.Graph) -&gt; Dict[str, Any]:
         &#34;&#34;&#34;Set up the parameters for the Leiden clustering.&#34;&#34;&#34;
         kwargs_leiden = {&#39;n_iterations&#39;: -1}
-        if self._mode == &#39;CPM&#39;:
+        if self.mode == &#39;CPM&#39;:
             kwargs_leiden[&#39;partition_type&#39;] = la.CPMVertexPartition
             kwargs_leiden[
                 &#39;resolution_parameter&#39;
@@ -836,10 +974,10 @@ array([list([2, 0]), list([1])], dtype=object)
             kwargs_leiden[
                 &#39;partition_type&#39;
             ] = la.ModularityVertexPartition
-        if self._weighted:
+        if self.weighted:
             kwargs_leiden[&#39;weights&#39;] = graph.es[&#39;weight&#39;]
 
-        kwargs_leiden[&#39;seed&#39;] = self._seed
+        kwargs_leiden[&#39;seed&#39;] = self.seed
 
         return kwargs_leiden
 
@@ -892,15 +1030,15 @@ array([list([2, 0]), list([1])], dtype=object)
             &#39;method&#39;: &#39;pam&#39;,
         }
 
-        kmedoids = KMedoids(n_clusters=self._n_clusters, **kmedoids_kwargs)
+        kmedoids = KMedoids(n_clusters=self.n_clusters, **kmedoids_kwargs)
         kmedoids.fit(1 - matrix)
         labels = kmedoids.labels_
 
         # store number of clusters
         nclusters: int = len(np.unique(labels))
-        if nclusters != self._n_clusters:
+        if nclusters != self.n_clusters:
             raise ValueError(
-                f&#39;k-medoids tried to find {self._n_clusters} clusters&#39;
+                f&#39;k-medoids tried to find {self.n_clusters} clusters&#39;
                 f&#39;but only {nclusters} found. Please try a different value.&#39;,
             )
         self.n_clusters_: Float2DArray = nclusters
@@ -915,6 +1053,11 @@ array([list([2, 0]), list([1])], dtype=object)
         ]
         return cluster_list</code></pre>
 </details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>sklearn.base.ClusterMixin</li>
+<li>sklearn.base.BaseEstimator</li>
+</ul>
 <h3>Methods</h3>
 <dl>
 <dt id="mosaic.clustering.Clustering.fit"><code class="name flex">
@@ -954,38 +1097,38 @@ def fit(self, X: SimilarityMatrix, y: Optional[np.ndarray] = None) -&gt; None:
 
     # prepare matric for graph construction
     mat: FloatMatrix
-    if self._mode in {&#39;linkage&#39;, &#39;kmedoids&#39;}:
+    if self.mode in {&#39;linkage&#39;, &#39;kmedoids&#39;}:
         mat = np.copy(X)
-    elif self._mode == &#39;CPM&#39; and self._neighbors is None:
+    elif self.mode == &#39;CPM&#39; and self.n_neighbors is None:
         mat = np.copy(X)
     else:
         mat = self._construct_knn_mat(X)
 
-    if self._mode in {&#39;CPM&#39;, &#39;linkage&#39;}:
+    if self.mode in {&#39;CPM&#39;, &#39;linkage&#39;}:
         # mask diagonal and zero elements
         mat[mat == 0] = np.nan
         mat[np.diag_indices_from(mat)] = np.nan
 
-        if self._resolution_parameter is None:
-            if self._neighbors is None:
+        if self.resolution_parameter is None:
+            if self.n_neighbors is None:
                 third_quartile = 0.75
-                self._resolution_parameter = np.nanquantile(
+                self.resolution_parameter = np.nanquantile(
                     mat, third_quartile,
                 )
             else:
-                self._resolution_parameter = np.nanmean(mat)
+                self.resolution_parameter = np.nanmean(mat)
 
         self.resolution_param_: NumInRange0to1 = (
-            self._resolution_parameter
+            self.resolution_parameter
         )
 
     # create graph
     mat[np.isnan(mat)] = 0
 
     clusters: Object1DArray
-    if self._mode == &#39;linkage&#39;:
+    if self.mode == &#39;linkage&#39;:
         clusters = self._clustering_linkage(mat)
-    elif self._mode == &#39;kmedoids&#39;:
+    elif self.mode == &#39;kmedoids&#39;:
         clusters = self._clustering_kmedoids(mat)
     else:  # _mode in {&#39;CPM&#39;, &#39;modularity&#39;}
         graph: ig.Graph = ig.Graph.Weighted_Adjacency(
@@ -1005,6 +1148,123 @@ def fit(self, X: SimilarityMatrix, y: Optional[np.ndarray] = None) -&gt; None:
     for idx, cluster in enumerate(self.clusters_):
         labels[cluster] = idx
     self.labels_: Index1DArray = labels</code></pre>
+</details>
+</dd>
+<dt id="mosaic.clustering.Clustering.fit_predict"><code class="name flex">
+<span>def <span class="ident">fit_predict</span></span>(<span>self, X, y=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Clusters the correlation matrix by Leiden clustering on a graph.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>X</code></strong> :&ensp;<code>ndarray</code> of <code>shape (n_features, n_features)</code></dt>
+<dd>Matrix containing the correlation metric which is clustered. The
+values should go from [0, 1] where 1 means completely correlated
+and 0 no correlation.</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>Ignored</code></dt>
+<dd>Not used, present for scikit API consistency by convention.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>labels</code></strong> :&ensp;<code>ndarray</code> of <code>shape (n_samples,)</code></dt>
+<dd>Cluster labels.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@beartype
+def fit_predict(
+    self, X: SimilarityMatrix, y: Optional[np.ndarray] = None,
+) -&gt; Index1DArray:
+    &#34;&#34;&#34;Clusters the correlation matrix by Leiden clustering on a graph.
+
+    Parameters
+    ----------
+    X : ndarray of shape (n_features, n_features)
+        Matrix containing the correlation metric which is clustered. The
+        values should go from [0, 1] where 1 means completely correlated
+        and 0 no correlation.
+
+    y : Ignored
+        Not used, present for scikit API consistency by convention.
+
+    Returns
+    -------
+    labels : ndarray of shape (n_samples,)
+        Cluster labels.
+
+    &#34;&#34;&#34;
+    return super().fit_predict(X, y)</code></pre>
+</details>
+</dd>
+<dt id="mosaic.clustering.Clustering.score"><code class="name flex">
+<span>def <span class="ident">score</span></span>(<span>self, X, y=None, sample_weight=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Estimate silhouette_score of new correlation matrix.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>X</code></strong> :&ensp;<code>ndarray</code> of <code>shape (n_features, n_features)</code></dt>
+<dd>New matrix containing the correlation metric to score. The
+values should go from [0, 1] where 1 means completely correlated
+and 0 no correlation.</dd>
+<dt><strong><code>y</code></strong> :&ensp;<code>Ignored</code></dt>
+<dd>Not used, present for scikit API consistency by convention.</dd>
+<dt><strong><code>sample_weight</code></strong> :&ensp;<code>Ignored</code></dt>
+<dd>Not used, present for scikit API consistency by convention.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>score</code></strong> :&ensp;<code>float</code></dt>
+<dd>Silhouette score of new correlation matrix based on fitted labels.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@beartype
+def score(
+    self,
+    X: SimilarityMatrix,
+    y: Optional[np.ndarray] = None,
+    sample_weight: Optional[np.ndarray] = None,
+) -&gt; Float:
+    &#34;&#34;&#34;Estimate silhouette_score of new correlation matrix.
+
+    Parameters
+    ----------
+    X : ndarray of shape (n_features, n_features)
+        New matrix containing the correlation metric to score. The
+        values should go from [0, 1] where 1 means completely correlated
+        and 0 no correlation.
+
+    y : Ignored
+        Not used, present for scikit API consistency by convention.
+
+    sample_weight: Ignored
+        Not used, present for scikit API consistency by convention.
+
+    Returns
+    -------
+    score : float
+        Silhouette score of new correlation matrix based on fitted labels.
+
+    &#34;&#34;&#34;
+    check_is_fitted(self, attributes=[&#39;labels_&#39;, &#39;matrix_&#39;])
+
+    n_labels = len(self.labels_)
+    n_unique_labels = len(np.unique(self.labels_))
+
+    if n_labels != len(X):
+        raise ValueError(
+            f&#39;Dimension of X d={len(X):.0f} needs to agree with the &#39;
+            f&#39;dimension of the fitted data d={n_labels:.0f}.&#39;,
+        )
+
+    if n_unique_labels in {1, n_labels}:
+        return -1.0
+    return silhouette_score(X, labels=self.labels_)</code></pre>
 </details>
 </dd>
 </dl>
@@ -1034,6 +1294,8 @@ def fit(self, X: SimilarityMatrix, y: Optional[np.ndarray] = None) -&gt; None:
 <h4><code><a title="mosaic.clustering.Clustering" href="#mosaic.clustering.Clustering">Clustering</a></code></h4>
 <ul class="">
 <li><code><a title="mosaic.clustering.Clustering.fit" href="#mosaic.clustering.Clustering.fit">fit</a></code></li>
+<li><code><a title="mosaic.clustering.Clustering.fit_predict" href="#mosaic.clustering.Clustering.fit_predict">fit_predict</a></code></li>
+<li><code><a title="mosaic.clustering.Clustering.score" href="#mosaic.clustering.Clustering.score">score</a></code></li>
 </ul>
 </li>
 </ul>
