@@ -233,6 +233,7 @@ class Clustering(ClusterMixin, BaseEstimator):
     &gt;&gt;&gt; mat = np.array([[1.0, 0.1, 0.9], [0.1, 1.0, 0.1], [0.9, 0.1, 1.0]])
     &gt;&gt;&gt; clust = mosaic.Clustering()
     &gt;&gt;&gt; clust.fit(mat)
+    Clustering(resolution_parameter=0.7)
     &gt;&gt;&gt; clust.matrix_
     array([[1. , 0.9, 0.1],
            [0.9, 1. , 0.1],
@@ -255,10 +256,13 @@ class Clustering(ClusterMixin, BaseEstimator):
     ) -&gt; None:
         &#34;&#34;&#34;Initialize Clustering class.&#34;&#34;&#34;
         self.mode: ClusteringModeString = mode
-        self.weighted: bool = weighted
-        self.n_neighbors: Optional[PositiveInt] = n_neighbors
-        self.seed: Optional[int] = seed
         self.n_clusters: Optional[PositiveInt] = n_clusters
+        self.n_neighbors: Optional[PositiveInt] = n_neighbors
+        self.resolution_parameter: Optional[NumInRange0to1] = (
+            resolution_parameter
+        )
+        self.seed: Optional[int] = seed
+        self.weighted: bool = weighted
 
         if mode in {&#39;linkage&#39;, &#39;kmedoids&#39;} and self.n_neighbors is not None:
             raise NotImplementedError(
@@ -275,9 +279,6 @@ class Clustering(ClusterMixin, BaseEstimator):
             )
 
         if mode in {&#39;CPM&#39;, &#39;linkage&#39;}:
-            self.resolution_parameter: Optional[NumInRange0to1] = (
-                resolution_parameter
-            )
             if not weighted:
                 raise NotImplementedError(
                     f&#34;mode=&#39;{mode}&#39; does not support weighted=False&#34;,
@@ -644,6 +645,7 @@ as a linkage matrix, see
 &gt;&gt;&gt; mat = np.array([[1.0, 0.1, 0.9], [0.1, 1.0, 0.1], [0.9, 0.1, 1.0]])
 &gt;&gt;&gt; clust = mosaic.Clustering()
 &gt;&gt;&gt; clust.fit(mat)
+Clustering(resolution_parameter=0.7)
 &gt;&gt;&gt; clust.matrix_
 array([[1. , 0.9, 0.1],
        [0.9, 1. , 0.1],
@@ -732,6 +734,7 @@ array([list([2, 0]), list([1])], dtype=object)
     &gt;&gt;&gt; mat = np.array([[1.0, 0.1, 0.9], [0.1, 1.0, 0.1], [0.9, 0.1, 1.0]])
     &gt;&gt;&gt; clust = mosaic.Clustering()
     &gt;&gt;&gt; clust.fit(mat)
+    Clustering(resolution_parameter=0.7)
     &gt;&gt;&gt; clust.matrix_
     array([[1. , 0.9, 0.1],
            [0.9, 1. , 0.1],
@@ -754,10 +757,13 @@ array([list([2, 0]), list([1])], dtype=object)
     ) -&gt; None:
         &#34;&#34;&#34;Initialize Clustering class.&#34;&#34;&#34;
         self.mode: ClusteringModeString = mode
-        self.weighted: bool = weighted
-        self.n_neighbors: Optional[PositiveInt] = n_neighbors
-        self.seed: Optional[int] = seed
         self.n_clusters: Optional[PositiveInt] = n_clusters
+        self.n_neighbors: Optional[PositiveInt] = n_neighbors
+        self.resolution_parameter: Optional[NumInRange0to1] = (
+            resolution_parameter
+        )
+        self.seed: Optional[int] = seed
+        self.weighted: bool = weighted
 
         if mode in {&#39;linkage&#39;, &#39;kmedoids&#39;} and self.n_neighbors is not None:
             raise NotImplementedError(
@@ -774,9 +780,6 @@ array([list([2, 0]), list([1])], dtype=object)
             )
 
         if mode in {&#39;CPM&#39;, &#39;linkage&#39;}:
-            self.resolution_parameter: Optional[NumInRange0to1] = (
-                resolution_parameter
-            )
             if not weighted:
                 raise NotImplementedError(
                     f&#34;mode=&#39;{mode}&#39; does not support weighted=False&#34;,
