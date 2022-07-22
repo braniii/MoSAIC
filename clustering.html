@@ -168,7 +168,7 @@ class Clustering(ClusterMixin, BaseEstimator):
         - &#39;CPM&#39;: will use the constant Potts model on the full, weighted graph
         - &#39;modularity&#39;: will use modularity on a knn-graph
         - &#39;linkage&#39;: will use complete-linkage clustering
-        - &#39;kmedoids&#39;: will use $k$-medoids clustering
+        - &#39;kmedoids&#39;: will use k-medoids clustering
 
     weighted : bool, default=True
         If True, the underlying graph has weighted edges. Otherwise, the graph
@@ -593,7 +593,7 @@ algorithm ('CPM', or 'modularity') or linkage clustering.
 - 'CPM': will use the constant Potts model on the full, weighted graph
 - 'modularity': will use modularity on a knn-graph
 - 'linkage': will use complete-linkage clustering
-- 'kmedoids': will use $k$-medoids clustering</dd>
+- 'kmedoids': will use k-medoids clustering</dd>
 <dt><strong><code>weighted</code></strong> :&ensp;<code>bool</code>, default=<code>True</code></dt>
 <dd>If True, the underlying graph has weighted edges. Otherwise, the graph
 is constructed using the adjacency matrix.</dd>
@@ -669,7 +669,7 @@ array([list([2, 0]), list([1])], dtype=object)
         - &#39;CPM&#39;: will use the constant Potts model on the full, weighted graph
         - &#39;modularity&#39;: will use modularity on a knn-graph
         - &#39;linkage&#39;: will use complete-linkage clustering
-        - &#39;kmedoids&#39;: will use $k$-medoids clustering
+        - &#39;kmedoids&#39;: will use k-medoids clustering
 
     weighted : bool, default=True
         If True, the underlying graph has weighted edges. Otherwise, the graph

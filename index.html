@@ -278,7 +278,7 @@ algorithm ('CPM', or 'modularity') or linkage clustering.
 - 'CPM': will use the constant Potts model on the full, weighted graph
 - 'modularity': will use modularity on a knn-graph
 - 'linkage': will use complete-linkage clustering
-- 'kmedoids': will use $k$-medoids clustering</dd>
+- 'kmedoids': will use k-medoids clustering</dd>
 <dt><strong><code>weighted</code></strong> :&ensp;<code>bool</code>, default=<code>True</code></dt>
 <dd>If True, the underlying graph has weighted edges. Otherwise, the graph
 is constructed using the adjacency matrix.</dd>
@@ -354,7 +354,7 @@ array([list([2, 0]), list([1])], dtype=object)
         - &#39;CPM&#39;: will use the constant Potts model on the full, weighted graph
         - &#39;modularity&#39;: will use modularity on a knn-graph
         - &#39;linkage&#39;: will use complete-linkage clustering
-        - &#39;kmedoids&#39;: will use $k$-medoids clustering
+        - &#39;kmedoids&#39;: will use k-medoids clustering
 
     weighted : bool, default=True
         If True, the underlying graph has weighted edges. Otherwise, the graph
@@ -1046,11 +1046,11 @@ for an overview of all available attributes and more detailed description.</p>
 &gt;&gt;&gt; search = mosaic.GridSearchCV(
 ...     similarity=mosaic.Similarity(),
 ...     clustering=mosaic.Clustering(),
-...     param_grid={'resolution_parameter': [0.05, 0.2, 0.999]},
+...     param_grid={'resolution_parameter': [0.05, 0.2]},
 ... )
 &gt;&gt;&gt; search.fit(traj)
 GridSearchCV(clustering=Clustering(),
-             param_grid={'clust__resolution_parameter': [0.05, 0.2, 0.999]},
+             param_grid={'clust__resolution_parameter': [0.05, 0.2]},
              similarity=Similarity())
 &gt;&gt;&gt; search.best_params_
 {'clust__resolution_parameter': 0.2}
@@ -1135,11 +1135,11 @@ Pipeline(steps=[('sim', Similarity()),
     &gt;&gt;&gt; search = mosaic.GridSearchCV(
     ...     similarity=mosaic.Similarity(),
     ...     clustering=mosaic.Clustering(),
-    ...     param_grid={&#39;resolution_parameter&#39;: [0.05, 0.2, 0.999]},
+    ...     param_grid={&#39;resolution_parameter&#39;: [0.05, 0.2]},
     ... )
     &gt;&gt;&gt; search.fit(traj)
     GridSearchCV(clustering=Clustering(),
-                 param_grid={&#39;clust__resolution_parameter&#39;: [0.05, 0.2, 0.999]},
+                 param_grid={&#39;clust__resolution_parameter&#39;: [0.05, 0.2]},
                  similarity=Similarity())
     &gt;&gt;&gt; search.best_params_
     {&#39;clust__resolution_parameter&#39;: 0.2}
