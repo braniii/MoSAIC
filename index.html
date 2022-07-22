@@ -84,7 +84,7 @@ published works.</p>
 <li>Intuitive usage via <a href="#module---inside-a-python-script">module</a> and via <a href="#ci---usage-directly-from-the-command-line">CI</a></li>
 <li>Sklearn-style API for fast integration into your Python workflow</li>
 <li>No magic, only a
-single parameter</li>
+single parameter which can be optimized via cross-validation</li>
 <li>Extensive <a href="https://moldyn.github.io/MoSAIC">documentation</a> and
 detailed discussion in publication</li>
 </ul>
@@ -189,6 +189,55 @@ clusters = clust.clusters_
 clusterd_X = clust.matrix_
 ...
 </code></pre>
+<h3 id="cross-validation-of-parameters">Cross-Validation of Parameters</h3>
+<p>Selecting the optimal parameters, e.g., <code>resolution_parameter</code>, or <code>n_clusters</code>, can be quite difficult.
+Here we show a short example how one can use cross-validation for optimizing the parameters. Nevertheless,
+one should keep in mind that the here used silhouette score is not optimal for our task. Hence, the here
+obtained optimal parameters should be considered as a good first guess.</p>
+<p>Here a figure visualizing the optimal cluster value <code>n_clusters=12</code> and the code to produce it.
+<img class="lightmode" style="width: 400px;" src="https://github.com/moldyn/MoSAIC/blob/main/docs/cv_silhouette_light.svg?raw=true#gh-light-mode-only" /><img class="darkmode" style="width: 400px;" src="https://github.com/moldyn/MoSAIC/blob/main/docs/cv_silhouette_dark.svg?raw=true#gh-dark-mode-only" /></p>
+<pre><code class="language-python">import mosaic
+import numpy as np
+import prettypyplot as pplt
+from matplotlib import pyplot as plt
+
+pplt.use_style(colors='tab20c', figsize=2.4)
+
+# traj = np.loadtxt(filename)
+
+# specify parameters grid
+n_clusters = np.arange(2, traj.shape[1])
+params = {'n_clusters': n_clusters}
+search = mosaic.GridSearchCV(
+    similarity=mosaic.Similarity(),
+    clustering=mosaic.Clustering(
+        mode='kmedoids',
+        n_clusters=2,  # any dummy value is good here
+    ),
+    param_grid=params,
+).fit(traj)
+
+# plotting result
+fig, ax = plt.subplots()
+mean_score = search.cv_results_['mean_test_score']
+std_score = search.cv_results_['std_test_score']
+
+ax.fill_between(
+    n_clusters,
+    mean_score + std_score,
+    mean_score - std_score,
+    color='C2',
+)
+ax.plot(n_clusters, mean_score + std_score, c='C1')
+ax.plot(n_clusters, mean_score - std_score, c='C1')
+ax.plot(n_clusters, mean_score, c='C0')
+
+ax.set_xlim([0, traj.shape[1]])
+ax.set_xlabel(r'$k$ no. of clusters')
+ax.set_ylabel(r'silhouette score')
+
+pplt.savefig('cv_silhouette.pdf')
+</code></pre>
 <h3 id="faq">FAQ</h3>
 <h4 id="how-to-load-the-clusters-file-back-to-python">How to load the clusters file back to Python?</h4>
 <p>Simply use the function provided in <code>tools</code>:</p>
@@ -199,8 +248,8 @@ clusters = mosaic.tools.load_clusters(clusterfile)
 </code></pre>
 <h4 id="is-it-possible-to-use-cross-validation-together-with-silhouette-score">Is it possible to use cross validation together with silhouette score?</h4>
 <p>The new release <code>v0.3.0</code> refactored the classes, so that the
-<a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html"><code>sklearn.model_selection.GridSearchCV</code></a> can be used.
-In the next weeks a tutorial and helper class will be added/implemented.</p>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html"><code>sklearn.model_selection.GridSearchCV</code></a> can be used. Check out
+<a href="#cross-validation-of-parameters">cv example</a>.</p>
 <h4 id="i-get-an-error">I get an error.</h4>
 <p>Please <a href="https://github.com/moldyn/MoSAIC/issues/new/choose">open an issue</a>.</p>
 <h4 id="should-i-upgrade-the-package">Should I upgrade the package?</h4>
@@ -2032,6 +2081,7 @@ def fit(
 <li><a href="#usage">Usage</a><ul>
 <li><a href="#ci-usage-directly-from-the-command-line">CI - Usage Directly from the Command Line</a></li>
 <li><a href="#module-inside-a-python-script">Module - Inside a Python Script</a></li>
+<li><a href="#cross-validation-of-parameters">Cross-Validation of Parameters</a></li>
 <li><a href="#faq">FAQ</a><ul>
 <li><a href="#how-to-load-the-clusters-file-back-to-python">How to load the clusters file back to Python?</a></li>
 <li><a href="#is-it-possible-to-use-cross-validation-together-with-silhouette-score">Is it possible to use cross validation together with silhouette score?</a></li>
