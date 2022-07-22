@@ -199,7 +199,7 @@ class Similarity(BaseEstimator):
         self,
         X: Union[FloatMax2DArray, str],
         y: Optional[ArrayLikeFloat] = None,
-    ) -&gt; None:
+    ):
         &#34;&#34;&#34;Compute the correlation/nmi distance matrix.
 
         Parameters
@@ -210,11 +210,16 @@ class Similarity(BaseEstimator):
         y : Ignored
             Not used, present for scikit API consistency by convention.
 
+        Returns
+        -------
+        self : object
+            Fitted estimator.
+
         &#34;&#34;&#34;
         raise NotImplementedError(&#39;Fatal error, this should never be reached.&#39;)
 
     @fit.register
-    def _(self, X: np.ndarray, y=None) -&gt; None:
+    def _(self, X: np.ndarray, y=None):
         &#34;&#34;&#34;Dispatched for low_memory=False with matrix input.&#34;&#34;&#34;
         self._reset()
 
@@ -244,8 +249,10 @@ class Similarity(BaseEstimator):
             matrix_ = self._nonlinear_correlation(X)
         self.matrix_: np.ndarray = np.clip(matrix_, a_min=0, a_max=1)
 
+        return self
+
     @fit.register
-    def _(self, X: str, y=None) -&gt; None:
+    def _(self, X: str, y=None):
         &#34;&#34;&#34;Dispatched for low_memory=True with string.&#34;&#34;&#34;
         self._reset()
 
@@ -264,6 +271,8 @@ class Similarity(BaseEstimator):
             )
 
         self.matrix_: np.ndarray = np.clip(matrix_, a_min=0, a_max=1)
+
+        return self
 
     @beartype
     def fit_transform(
@@ -585,7 +594,7 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
         self,
         X: Union[FloatMax2DArray, str],
         y: Optional[ArrayLikeFloat] = None,
-    ) -&gt; None:
+    ):
         &#34;&#34;&#34;Compute the correlation/nmi distance matrix.
 
         Parameters
@@ -596,11 +605,16 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
         y : Ignored
             Not used, present for scikit API consistency by convention.
 
+        Returns
+        -------
+        self : object
+            Fitted estimator.
+
         &#34;&#34;&#34;
         raise NotImplementedError(&#39;Fatal error, this should never be reached.&#39;)
 
     @fit.register
-    def _(self, X: np.ndarray, y=None) -&gt; None:
+    def _(self, X: np.ndarray, y=None):
         &#34;&#34;&#34;Dispatched for low_memory=False with matrix input.&#34;&#34;&#34;
         self._reset()
 
@@ -630,8 +644,10 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
             matrix_ = self._nonlinear_correlation(X)
         self.matrix_: np.ndarray = np.clip(matrix_, a_min=0, a_max=1)
 
+        return self
+
     @fit.register
-    def _(self, X: str, y=None) -&gt; None:
+    def _(self, X: str, y=None):
         &#34;&#34;&#34;Dispatched for low_memory=True with string.&#34;&#34;&#34;
         self._reset()
 
@@ -650,6 +666,8 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
             )
 
         self.matrix_: np.ndarray = np.clip(matrix_, a_min=0, a_max=1)
+
+        return self
 
     @beartype
     def fit_transform(
@@ -755,6 +773,11 @@ and Continuous Data Sets"&#160;<a class="footnote-backref" href="#fnref:3" title
 <dd>Training data.</dd>
 <dt><strong><code>y</code></strong> :&ensp;<code>Ignored</code></dt>
 <dd>Not used, present for scikit API consistency by convention.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>self</code></strong> :&ensp;<code>object</code></dt>
+<dd>Fitted estimator.</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -766,7 +789,7 @@ def fit(
     self,
     X: Union[FloatMax2DArray, str],
     y: Optional[ArrayLikeFloat] = None,
-) -&gt; None:
+):
     &#34;&#34;&#34;Compute the correlation/nmi distance matrix.
 
     Parameters
@@ -776,6 +799,11 @@ def fit(
 
     y : Ignored
         Not used, present for scikit API consistency by convention.
+
+    Returns
+    -------
+    self : object
+        Fitted estimator.
 
     &#34;&#34;&#34;
     raise NotImplementedError(&#39;Fatal error, this should never be reached.&#39;)</code></pre>

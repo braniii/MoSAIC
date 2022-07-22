@@ -19,7 +19,7 @@ INDEX=[
 {
 "ref":"mosaic.Clustering.fit",
 "url":0,
-"doc":"Clusters the correlation matrix by Leiden clustering on a graph. Parameters      X : ndarray of shape (n_features, n_features) Matrix containing the correlation metric which is clustered. The values should go from [0, 1] where 1 means completely correlated and 0 no correlation. y : Ignored Not used, present for scikit API consistency by convention.",
+"doc":"Clusters the correlation matrix by Leiden clustering on a graph. Parameters      X : ndarray of shape (n_features, n_features) Matrix containing the correlation metric which is clustered. The values should go from [0, 1] where 1 means completely correlated and 0 no correlation. y : Ignored Not used, present for scikit API consistency by convention. Returns    - self : object Fitted estimator.",
 "func":1
 },
 {
@@ -42,7 +42,7 @@ INDEX=[
 {
 "ref":"mosaic.Similarity.fit",
 "url":0,
-"doc":"Compute the correlation/nmi distance matrix. Parameters      X : ndarray of shape (n_samples, n_features) or str if low_memory=True Training data. y : Ignored Not used, present for scikit API consistency by convention.",
+"doc":"Compute the correlation/nmi distance matrix. Parameters      X : ndarray of shape (n_samples, n_features) or str if low_memory=True Training data. y : Ignored Not used, present for scikit API consistency by convention. Returns    - self : object Fitted estimator.",
 "func":1
 },
 {
@@ -81,7 +81,7 @@ INDEX=[
 {
 "ref":"mosaic.similarity.Similarity.fit",
 "url":1,
-"doc":"Compute the correlation/nmi distance matrix. Parameters      X : ndarray of shape (n_samples, n_features) or str if low_memory=True Training data. y : Ignored Not used, present for scikit API consistency by convention.",
+"doc":"Compute the correlation/nmi distance matrix. Parameters      X : ndarray of shape (n_samples, n_features) or str if low_memory=True Training data. y : Ignored Not used, present for scikit API consistency by convention. Returns    - self : object Fitted estimator.",
 "func":1
 },
 {
@@ -109,7 +109,7 @@ INDEX=[
 {
 "ref":"mosaic.clustering.Clustering.fit",
 "url":2,
-"doc":"Clusters the correlation matrix by Leiden clustering on a graph. Parameters      X : ndarray of shape (n_features, n_features) Matrix containing the correlation metric which is clustered. The values should go from [0, 1] where 1 means completely correlated and 0 no correlation. y : Ignored Not used, present for scikit API consistency by convention.",
+"doc":"Clusters the correlation matrix by Leiden clustering on a graph. Parameters      X : ndarray of shape (n_features, n_features) Matrix containing the correlation metric which is clustered. The values should go from [0, 1] where 1 means completely correlated and 0 no correlation. y : Ignored Not used, present for scikit API consistency by convention. Returns    - self : object Fitted estimator.",
 "func":1
 },
 {
