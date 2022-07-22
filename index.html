@@ -197,6 +197,10 @@ clusterd_X = clust.matrix_
 clusterfile = '...'
 clusters = mosaic.tools.load_clusters(clusterfile)
 </code></pre>
+<h4 id="is-it-possible-to-use-cross-validation-together-with-silhouette-score">Is it possible to use cross validation together with silhouette score?</h4>
+<p>The new release <code>v0.3.0</code> refactored the classes, so that the
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html"><code>sklearn.model_selection.GridSearchCV</code></a> can be used.
+In the next weeks a tutorial and helper class will be added/implemented.</p>
 <h4 id="i-get-an-error">I get an error.</h4>
 <p>Please <a href="https://github.com/moldyn/MoSAIC/issues/new/choose">open an issue</a>.</p>
 <h4 id="should-i-upgrade-the-package">Should I upgrade the package?</h4>
@@ -209,7 +213,7 @@ environment there are multiples possibilities. Either create a
 virtual environment on your own via <code>conda</code> or <code>venv</code>, or you can
 simply use <a href="https://pypa.github.io/pipx/">pipx</a></p>
 <h4 id="is-the-silhouette-method-implemented">Is the silhouette method implemented?</h4>
-<p>This feature will be added in <code>v0.3.0</code> in the next weeks.</p>
+<p>Yes, simply use the <code>score</code> method implemented in the <code><a title="mosaic.Clustering" href="#mosaic.Clustering">Clustering</a></code> class.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1669,6 +1673,7 @@ def fit(
 <li><a href="#module-inside-a-python-script">Module - Inside a Python Script</a></li>
 <li><a href="#faq">FAQ</a><ul>
 <li><a href="#how-to-load-the-clusters-file-back-to-python">How to load the clusters file back to Python?</a></li>
+<li><a href="#is-it-possible-to-use-cross-validation-together-with-silhouette-score">Is it possible to use cross validation together with silhouette score?</a></li>
 <li><a href="#i-get-an-error">I get an error.</a></li>
 <li><a href="#should-i-upgrade-the-package">Should I upgrade the package?</a></li>
 <li><a href="#how-can-i-interpretate-the-results">How can I interpretate the results?</a></li>
