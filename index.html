@@ -65,10 +65,10 @@
 </div>
 <h1 id="molecular-systems-automated-identification-of-cooperativity">Molecular Systems Automated Identification of Cooperativity</h1>
 <p>MoSAIC is a new method for correlation analysis which automatically detects
-collective motion in MD simulation data, identifies uncorrelated features
-as noise and hence provides a detailed picture of the key coordinates driving a
-conformational change in a biomolecular system. It is based on the Leiden community
-detection algorithm which is used to bring a correlation matrix in a
+collective motion in MD simulation data, identifies uncorrelated features as
+noise and hence provides a detailed picture of the key coordinates driving a
+conformational change in a biomolecular system. It is based on the Leiden
+community detection algorithm which is used to bring a correlation matrix in a
 block-diagonal form.</p>
 <p>The method was published in:</p>
 <blockquote>
@@ -77,20 +77,24 @@ block-diagonal form.</p>
 in Proteins</em>, J. Chem. Theory Comput., 2022, XXXX, XXX, XXX-XXX,
 <a href="https://pubs.acs.org/doi/10.1021/acs.jctc.2c00337">10.1021/acs.jctc.2c00337</a></p>
 </blockquote>
-<p>We kindly ask you to cite this article in case you use this software package for
-published works.</p>
+<p>We kindly ask you to cite this article in case you use this software package
+for published works.</p>
 <h2 id="features">Features</h2>
 <ul>
-<li>Intuitive usage via <a href="#module---inside-a-python-script">module</a> and via <a href="#ci---usage-directly-from-the-command-line">CI</a></li>
+<li>Intuitive usage via <a href="#module---inside-a-python-script">module</a> and via
+<a href="#ci---usage-directly-from-the-command-line">CI</a></li>
 <li>Sklearn-style API for fast integration into your Python workflow</li>
 <li>No magic, only a
-single parameter which can be optimized via cross-validation</li>
+single parameter which can be optimized via
+cross-validation</li>
 <li>Extensive <a href="https://moldyn.github.io/MoSAIC">documentation</a> and
 detailed discussion in publication</li>
 </ul>
 <h2 id="installation">Installation</h2>
-<p>The package is called <code>mosaic-clustering</code> and is available via <a href="https://pypi.org/project/mosaic-clustering">PyPI</a>
-or <a href="https://anaconda.org/conda-forge/mosaic-clustering">conda</a>. To install it, simply call:</p>
+<p>The package is called <code>mosaic-clustering</code> and is available via
+<a href="https://pypi.org/project/mosaic-clustering">PyPI</a> or
+<a href="https://anaconda.org/conda-forge/mosaic-clustering">conda</a>. To install it,
+simply call:</p>
 <pre><code class="language-bash">python3 -m pip install --upgrade mosaic-clustering
 </code></pre>
 <p>or</p>
@@ -190,12 +194,15 @@ clusterd_X = clust.matrix_
 ...
 </code></pre>
 <h3 id="cross-validation-of-parameters">Cross-Validation of Parameters</h3>
-<p>Selecting the optimal parameters, e.g., <code>resolution_parameter</code>, or <code>n_clusters</code>, can be quite difficult.
-Here we show a short example how one can use cross-validation for optimizing the parameters. Nevertheless,
-one should keep in mind that the here used silhouette score is not optimal for our task. Hence, the here
-obtained optimal parameters should be considered as a good first guess.</p>
-<p>Here a figure visualizing the optimal cluster value <code>n_clusters=12</code> and the code to produce it.
-<img class="lightmode" style="width: 400px;" src="https://github.com/moldyn/MoSAIC/blob/main/docs/cv_silhouette_light.svg?raw=true#gh-light-mode-only" /><img class="darkmode" style="width: 400px;" src="https://github.com/moldyn/MoSAIC/blob/main/docs/cv_silhouette_dark.svg?raw=true#gh-dark-mode-only" /></p>
+<p>Selecting the optimal parameters, e.g., <code>resolution_parameter</code>, or
+<code>n_clusters</code>, can be quite difficult. Here we show a short example how one can
+use cross-validation for optimizing the parameters. Nevertheless, one should
+keep in mind that the here used silhouette score is not optimal for our task.
+Hence, the here obtained optimal parameters should be considered as a good
+first guess.</p>
+<p>Here a figure visualizing the optimal cluster value <code>n_clusters=12</code> and the
+code to produce it.</p>
+<p><img class="lightmode" style="width: 400px;" src="https://github.com/moldyn/MoSAIC/blob/main/docs/cv_silhouette_light.svg?raw=true#gh-light-mode-only" /><img class="darkmode" style="width: 400px;" src="https://github.com/moldyn/MoSAIC/blob/main/docs/cv_silhouette_dark.svg?raw=true#gh-dark-mode-only" /></p>
 <pre><code class="language-python">import mosaic
 import numpy as np
 import prettypyplot as pplt
@@ -248,8 +255,8 @@ clusters = mosaic.tools.load_clusters(clusterfile)
 </code></pre>
 <h4 id="is-it-possible-to-use-cross-validation-together-with-silhouette-score">Is it possible to use cross validation together with silhouette score?</h4>
 <p>The new release <code>v0.3.0</code> refactored the classes, so that the
-<a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html"><code>sklearn.model_selection.GridSearchCV</code></a> can be used. Check out
-<a href="#cross-validation-of-parameters">cv example</a>.</p>
+<a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html"><code>sklearn.model_selection.GridSearchCV</code></a>
+can be used. Check out the <a href="#cross-validation-of-parameters">cv example</a>.</p>
 <h4 id="i-get-an-error">I get an error.</h4>
 <p>Please <a href="https://github.com/moldyn/MoSAIC/issues/new/choose">open an issue</a>.</p>
 <h4 id="should-i-upgrade-the-package">Should I upgrade the package?</h4>
