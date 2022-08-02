@@ -64,12 +64,13 @@
 </p>
 </div>
 <h1 id="molecular-systems-automated-identification-of-cooperativity">Molecular Systems Automated Identification of Cooperativity</h1>
-<p>MoSAIC is a new method for correlation analysis which automatically detects
-collective motion in MD simulation data, identifies uncorrelated features as
-noise and hence provides a detailed picture of the key coordinates driving a
-conformational change in a biomolecular system. It is based on the Leiden
-community detection algorithm which is used to bring a correlation matrix in a
-block-diagonal form.</p>
+<p>MoSAIC is an unsupervised method for correlation analysis which automatically detects
+the collective motion in MD simulation data, while simultaneously identifying
+uncorrelated coordinates as noise.
+Hence it can be used as a feature selection scheme for Markov state modeling or simply
+to obtain a detailed picture of the key coordinates driving a biomolecular process.
+It is based on the Leiden community detection algorithm which is used to bring a
+correlation matrix in a block-diagonal form.</p>
 <p>The method was published in:</p>
 <blockquote>
 <p>G. Diez, D. Nagel, and G. Stock,
@@ -77,8 +78,7 @@ block-diagonal form.</p>
 in Proteins</em>, J. Chem. Theory Comput., 2022, XXXX, XXX, XXX-XXX,
 <a href="https://pubs.acs.org/doi/10.1021/acs.jctc.2c00337">10.1021/acs.jctc.2c00337</a></p>
 </blockquote>
-<p>We kindly ask you to cite this article in case you use this software package
-for published works.</p>
+<p>If you use this software package, pleaes cite the above mentioned paper.</p>
 <h2 id="features">Features</h2>
 <ul>
 <li>Intuitive usage via <a href="#module---inside-a-python-script">module</a> and via
