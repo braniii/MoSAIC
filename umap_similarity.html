@@ -46,6 +46,7 @@ import warnings
 import numpy as np
 from beartype import beartype
 from beartype.typing import Optional
+from decorit import deprecated
 
 from mosaic._typing import (  # noqa:WPS436
     ArrayLikeFloat,
@@ -101,6 +102,16 @@ class UMAPSimilarity:  # noqa: WPS214
 
     _default_n_components: PositiveInt = 2
 
+    @deprecated(
+        (
+            &#39;UMAPSimilarity class will be removed. As shown in our &#39;
+            &#39;publication, using Leiden/CPM outpferms an additional &#39;
+            &#39;UMAP embedding. If an embedding is desired, using MDS &#39;
+            &#39;in high dimensions is preferable.&#39;
+        ),
+        since=&#39;0.2.1&#39;,
+        remove=&#39;1.0.0&#39;,
+    )
     @beartype
     def __init__(
         self,
@@ -241,6 +252,16 @@ If <code>None</code> uses square root of the number of features.</dd>
 
     _default_n_components: PositiveInt = 2
 
+    @deprecated(
+        (
+            &#39;UMAPSimilarity class will be removed. As shown in our &#39;
+            &#39;publication, using Leiden/CPM outpferms an additional &#39;
+            &#39;UMAP embedding. If an embedding is desired, using MDS &#39;
+            &#39;in high dimensions is preferable.&#39;
+        ),
+        since=&#39;0.2.1&#39;,
+        remove=&#39;1.0.0&#39;,
+    )
     @beartype
     def __init__(
         self,

@@ -278,6 +278,10 @@ simply use <a href="https://pypa.github.io/pipx/">pipx</a></p>
 &#34;&#34;&#34;.. include:: ../../README.md&#34;&#34;&#34;
 __all__ = [&#39;Clustering&#39;, &#39;GridSearchCV&#39;, &#39;Similarity&#39;, &#39;UMAPSimilarity&#39;]
 
+METRICS = {&#39;correlation&#39;, &#39;NMI&#39;, &#39;JSD&#39;, &#39;GY&#39;}
+MODES = {&#39;CPM&#39;, &#39;modularity&#39;, &#39;linkage&#39;, &#39;kmedoids&#39;}
+NORMS = {&#39;joint&#39;, &#39;geometric&#39;, &#39;arithmetic&#39;, &#39;min&#39;, &#39;max&#39;}
+
 import mosaic.utils  # noqa: F401
 from .clustering import Clustering
 from .gridsearch import GridSearchCV
@@ -1947,6 +1951,16 @@ If <code>None</code> uses square root of the number of features.</dd>
 
     _default_n_components: PositiveInt = 2
 
+    @deprecated(
+        (
+            &#39;UMAPSimilarity class will be removed. As shown in our &#39;
+            &#39;publication, using Leiden/CPM outpferms an additional &#39;
+            &#39;UMAP embedding. If an embedding is desired, using MDS &#39;
+            &#39;in high dimensions is preferable.&#39;
+        ),
+        since=&#39;0.2.1&#39;,
+        remove=&#39;1.0.0&#39;,
+    )
     @beartype
     def __init__(
         self,
